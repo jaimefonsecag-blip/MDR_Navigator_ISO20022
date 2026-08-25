@@ -20,8 +20,28 @@ storeBody.split('\n').slice(1).forEach(line => {
     depth += (line.match(/[{[]/g) || []).length - (line.match(/[}\]]/g) || []).length;
 });
 
-const resetStart = script.indexOf('function resetMdrState()');
-const resetBody = script.slice(resetStart, script.indexOf('\n}', resetStart));
+// The reset is split per part, so loading one document cannot wipe the other.
+// The guarantee to verify is that the combination clears everything, so the
+// three bodies are inspected together.
+const RESET_FUNCTIONS = ['resetMdrState()', 'resetPart2State()', 'resetPart1State()'];
+const resetBody = RESET_FUNCTIONS.map(signature => {
+    const at = script.indexOf(`function ${signature}`);
+    if (at === -1) {
+        console.error(`No se encontro function ${signature} en index.html`);
+        process.exit(1);
+    }
+    return script.slice(at, script.indexOf('\n}', at));
+}).join('\n');
+
+// resetMdrState() must delegate to both, or going Home would only clear one part.
+RESET_FUNCTIONS.slice(1).forEach(signature => {
+    const combined = script.slice(script.indexOf('function resetMdrState()'));
+    const body = combined.slice(0, combined.indexOf('\n}'));
+    if (!body.includes(signature)) {
+        console.error(`resetMdrState() no llama a ${signature}`);
+        process.exit(1);
+    }
+});
 
 // Fields intentionally preserved across loads, with the reason.
 const PRESERVED = {
