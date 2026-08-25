@@ -1,0 +1,24 @@
+# Dependencias: se reinstalan con `npm install`, nunca se versionan (34 MB).
+node_modules/
+
+# Salida de build, si algún día se usa Vite.
+dist/
+
+# Documentos MDR de ISO 20022.
+# NO se suben: son publicaciones con derechos de ISO 20022 / SWIFT y no se
+# pueden redistribuir. Cada usuario carga su propio archivo en la herramienta.
+*.docx
+*.pdf
+
+# Basura de Windows / macOS / editores.
+desktop.ini
+Thumbs.db
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Temporales de análisis.
+scripts/_*.mjs
+scripts/_*.js
+*.log

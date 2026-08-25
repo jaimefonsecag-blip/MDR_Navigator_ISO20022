@@ -1,0 +1,25 @@
+{
+  "name": "mdr-navigator",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Navegador interactivo de MDR (Message Definition Report) ISO 20022: explora mensajes, building blocks, elementos, CodeSets y su esquema JSON.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "node scripts/check-syntax.js && node scripts/check-handlers.js && node scripts/check-translation.js && node scripts/check-reset.js && node scripts/check-docx-parser.js"
+  },
+  "keywords": [
+    "iso20022",
+    "mdr",
+    "json-schema",
+    "pdf"
+  ],
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@xmldom/xmldom": "0.9.12",
+    "vite": "8.2.2",
+    "vite-plugin-singlefile": "2.3.3"
+  }
+}
