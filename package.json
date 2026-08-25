@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "node scripts/check-syntax.js && node scripts/check-handlers.js && node scripts/check-translation.js && node scripts/check-reset.js && node scripts/check-docx-parser.js"
+    "check": "node scripts/check-syntax.js && node scripts/check-handlers.js && node scripts/check-filenames.js && node scripts/check-translation.js && node scripts/check-reset.js && node scripts/check-docx-parser.js"
   },
   "keywords": [
     "iso20022",

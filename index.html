@@ -881,6 +881,52 @@ body.theme-light .cf-overlay { background:rgba(14,21,51,0.38); }
 .cf-btn-primary { color:var(--on-accent); background:var(--accent-gradient); box-shadow:var(--shadow-brand); }
 .cf-btn-primary:hover { transform:translateY(-1px); box-shadow:0 10px 30px rgba(109,40,217,0.34); }
 
+/* Search hits inside the schema tree */
+.sch-hit { padding:0 1px; color:inherit; background:rgba(251,191,36,0.42); border-radius:3px; box-shadow:0 0 0 1px rgba(251,191,36,0.55); font-weight:700; }
+body.theme-light .sch-hit { background:rgba(250,204,21,0.55); box-shadow:0 0 0 1px rgba(180,83,9,0.35); }
+
+/* ===== Pairing panel on the upload screen ===== */
+.pairing-panel { margin-top:1.3rem; padding:0.9rem 1.1rem; text-align:left; border-radius:var(--radius-md); border:1px solid var(--border); border-left-width:3px; background:var(--bg-secondary); font-size:0.85rem; line-height:1.6; animation:fadeUp 0.3s var(--ease-out) both; }
+.pairing-panel p { margin-bottom:0.4rem; color:var(--text-secondary); }
+.pairing-panel p:last-child { margin-bottom:0; }
+.pairing-panel code { font-family:'Cascadia Code','Consolas',monospace; font-size:0.78rem; color:var(--accent); word-break:break-all; }
+.pairing-title { display:flex; align-items:center; gap:0.45rem; margin-bottom:0.4rem; font-weight:700; color:var(--text-primary); }
+.pairing-badge { display:inline-grid; place-items:center; width:1.4rem; height:1.4rem; font-size:0.74rem; color:var(--on-accent); background:var(--accent-gradient); border-radius:50%; }
+.pairing-note { font-size:0.78rem; color:var(--text-dim) !important; }
+.pairing-panel.is-hint { border-left-color:var(--accent); }
+.pairing-panel.is-ok { border-left-color:var(--success); background:var(--success-dim); }
+.pairing-panel.is-ok .pairing-title { color:var(--success); }
+.pairing-panel.is-error { border-left-color:var(--danger); background:var(--warning-dim); }
+.pairing-panel.is-error .pairing-title { color:var(--danger); }
+.pairing-warnings { margin:0.4rem 0 0 0; padding-left:1.1rem; color:var(--warning); font-size:0.8rem; }
+
+/* ===== Business context inside the technical view ===== */
+.bc-panel { margin:0.3rem 0 1.3rem; background:var(--bg-secondary); border:1px solid var(--border); border-left:3px solid var(--brand-blue); border-radius:var(--radius-md); overflow:hidden; }
+.bc-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; width:100%; padding:0.7rem 0.9rem; font:inherit; text-align:left; cursor:pointer; background:linear-gradient(135deg, rgba(37,99,235,0.10), transparent); border:0; }
+.bc-head:hover { background:var(--bg-hover); }
+.bc-head-main { display:flex; align-items:center; gap:0.6rem; min-width:0; }
+.bc-head strong { display:block; font-size:0.88rem; color:var(--text-primary); }
+.bc-head small { display:block; margin-top:0.1rem; font-size:0.74rem; color:var(--text-secondary); }
+.bc-head-meta { display:inline-flex; align-items:center; gap:0.4rem; flex:0 0 auto; }
+.bc-badge { display:inline-grid; place-items:center; width:1.5rem; height:1.5rem; flex:0 0 auto; font-size:0.76rem; font-weight:800; color:#FFFFFF; background:#2563EB; border-radius:50%; }
+.bc-body { padding:0.9rem; border-top:1px solid var(--border); animation:fadeDown 0.24s var(--ease-out) both; }
+.bc-label { display:block; margin-bottom:0.35rem; font-size:0.7rem; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-dim); }
+.bc-actors { display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap; margin-bottom:0.9rem; }
+.bc-actors .bc-label { width:100%; margin-bottom:0.15rem; }
+.bc-flow { padding:0.6rem 0.75rem; margin-bottom:0.7rem; background:var(--bg-panel); border-radius:var(--radius-sm); }
+.bc-flow-title { display:block; width:100%; padding:0; margin-bottom:0.4rem; font:inherit; font-size:0.82rem; font-weight:700; text-align:left; color:var(--accent); background:transparent; border:0; cursor:pointer; }
+.bc-flow-title:hover { text-decoration:underline; }
+.bc-steps { margin:0; padding-left:1.3rem; }
+.bc-steps li { margin-bottom:0.2rem; font-size:0.82rem; line-height:1.5; color:var(--text-secondary); }
+.bc-steps strong { color:var(--text-primary); font-weight:600; }
+.bc-route { color:var(--brand-blue); font-size:0.76rem; font-family:'Cascadia Code','Consolas',monospace; }
+.bc-more { display:inline-block; margin-top:0.2rem; font-size:0.74rem; font-style:italic; color:var(--text-dim); }
+.bc-sections { display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap; }
+.bc-sections .bc-label { width:100%; margin-bottom:0.15rem; }
+.bc-chip { padding:0.25rem 0.6rem; font:inherit; font-size:0.76rem; color:var(--accent); background:var(--accent-dim); border:1px solid transparent; border-radius:99px; cursor:pointer; transition:border-color 0.16s var(--ease); }
+.bc-chip:hover { border-color:var(--accent); }
+.p1-outline-badge.is-flow { color:var(--accent); font-weight:700; }
+
 /* Hover card with the Spanish definition */
 .sch-tip { position:fixed; z-index:210; max-width:420px; padding:0.7rem 0.85rem; background:var(--bg-secondary); border:1px solid var(--accent); border-radius:9px; box-shadow:0 12px 34px rgba(0,0,0,0.45); font-family:'Segoe UI',system-ui,sans-serif; pointer-events:none; }
 .sch-tip-head { display:flex; align-items:baseline; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.35rem; }
@@ -1008,6 +1054,9 @@ body.theme-light .cf-overlay { background:rgba(14,21,51,0.38); }
         <div class="part-state hidden" id="partState2"></div>
       </article>
     </div>
+
+    <!-- Third option: the unified view, enabled only when both parts share a domain. -->
+    <div id="pairingPanel" class="pairing-panel is-hint hidden"></div>
 
     <div id="libWarning" class="lib-warning hidden"></div>
 
@@ -1214,6 +1263,9 @@ const MDR = {
         queue: [],
         active: 0,
         maxConcurrent: 3,
+    baseConcurrent: 3,
+    // provider name -> timestamp until which it must not be called again
+    rateLimitedUntil: new Map(),
         generation: 0,
         providerFailures: new Map(),
         lastProvider: '',
@@ -1320,6 +1372,117 @@ function updateProgress(pct, text) {
     $progressBar.style.width = pct + '%';
     $statusText.textContent = text;
 }
+
+// ===== MDR FILE NAMING =====
+// ISO 20022 publishes each MDR as two files that follow one convention:
+//   ISO20022_MDRPart1_<Domain>_<Period>_v<N>.docx   (business, "the why")
+//   ISO20022_MDRPart2_<Domain>_<Period>_v<N>.pdf    (technical, "the what")
+// Published names are not consistent in practice, so the parser tolerates:
+//   - hyphens in the domain      Investment-Funds  ==  InvestmentFunds
+//   - free casing                BanktoCustomer…   ==  BankToCustomer…
+//   - composite domains          Target2Securities_LinkReferenceData
+//   - periods as years or months 2024_2025 | May2024 | March_2026
+//   - versions v1, v2, v2_0, and browser "(1)" duplicate suffixes
+// Two files may only be combined when the domain matches; a different period is
+// reported as a warning because ISO publishes the two parts on separate cycles.
+
+const MDR_MONTHS = 'january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec';
+
+function mdrDomainKey(value) {
+    // Everything that is not a letter or digit is noise for comparison.
+    return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function parseMdrFileName(name) {
+    const raw = String(name || '');
+    const extMatch = raw.match(/\.(docx|pdf)$/i);
+    if (!extMatch) return { ok: false, reason: 'La extensión debe ser .docx (Parte 1) o .pdf (Parte 2).' };
+    const ext = extMatch[1].toLowerCase();
+
+    // Strip the extension and the " (1)" a browser adds to repeated downloads.
+    let stem = raw.slice(0, raw.length - extMatch[0].length).replace(/\s*\(\d+\)\s*$/, '').trim();
+    // A stray hyphen glued to a separator appears in some published names.
+    stem = stem.replace(/_-+/g, '_');
+
+    const head = stem.match(/^iso[\s_-]?20022[_-](mdr(?:part)?)([12])?[_-](.+)$/i);
+    if (!head) {
+        return { ok: false, reason: 'El nombre no sigue la convención ISO20022_MDRPart<1|2>_<Dominio>_<Periodo>_v<N>.' };
+    }
+
+    const declaredPart = head[2] ? Number(head[2]) : 0;
+    let rest = head[3];
+
+    // Peel the tail in order: version, then period (years or month+year).
+    const version = (rest.match(/[_-]v(\d+(?:[_.]\d+)*)$/i) || [])[1] || '';
+    rest = rest.replace(/[_-]v\d+(?:[_.]\d+)*$/i, '');
+    const periodParts = [];
+    const years = rest.match(/[_-]((?:19|20)\d{2})(?:[_-]((?:19|20)\d{2}))?$/);
+    if (years) {
+        periodParts.unshift(years[2] ? `${years[1]}-${years[2]}` : years[1]);
+        rest = rest.slice(0, years.index);
+    }
+    const month = rest.match(new RegExp(`[_-](${MDR_MONTHS})[_-]?((?:19|20)\\d{2})?$`, 'i'));
+    if (month) {
+        periodParts.unshift(month[2] ? `${month[1]} ${month[2]}` : month[1]);
+        rest = rest.slice(0, month.index);
+    }
+
+    const domain = rest.replace(/^[_-]+|[_-]+$/g, '');
+    if (!domain) return { ok: false, reason: 'No se pudo identificar el dominio en el nombre del archivo.' };
+
+    // Without an explicit part number the extension decides, since Part 1 is
+    // always the Word document and Part 2 always the PDF.
+    const partFromExtension = declaredPart === 0;
+    const part = declaredPart || (ext === 'docx' ? 1 : 2);
+    const expectedExt = part === 1 ? 'docx' : 'pdf';
+
+    return {
+        ok: true,
+        fileName: raw,
+        ext,
+        part,
+        partFromExtension,
+        // A "Part1" that is a PDF (or vice versa) is a renamed file, not a valid pair.
+        partMismatch: !partFromExtension && ext !== expectedExt,
+        domain: domain.replace(/[_-]+/g, ' ').trim(),
+        domainKey: mdrDomainKey(domain),
+        period: periodParts.join(' '),
+        version
+    };
+}
+
+// Decides whether a Part 1 and a Part 2 describe the same MDR.
+function compareMdrFiles(first, second) {
+    const warnings = [];
+    if (!first || !first.ok) return { compatible: false, warnings, reason: (first && first.reason) || 'Parte 1 no reconocida.' };
+    if (!second || !second.ok) return { compatible: false, warnings, reason: (second && second.reason) || 'Parte 2 no reconocida.' };
+
+    const part1 = first.part === 1 ? first : second;
+    const part2 = first.part === 1 ? second : first;
+    if (part1.part === part2.part) {
+        return { compatible: false, warnings, reason: `Los dos archivos son la Parte ${part1.part}. Hace falta una Parte 1 (.docx) y una Parte 2 (.pdf).` };
+    }
+
+    // The hard rule: same business domain, or the navigator stays disabled.
+    if (part1.domainKey !== part2.domainKey) {
+        return {
+            compatible: false,
+            warnings,
+            reason: `Los documentos son de dominios distintos: «${part1.domain}» (Parte 1) y «${part2.domain}» (Parte 2). Solo se pueden combinar dos partes del mismo dominio.`
+        };
+    }
+
+    // Soft signals: ISO releases each part on its own cycle, so a different
+    // period is common and must not block the combination.
+    if (part1.period && part2.period && part1.period !== part2.period) {
+        warnings.push(`El periodo no coincide: Parte 1 (${part1.period}) y Parte 2 (${part2.period}). Puede haber diferencias entre versiones.`);
+    }
+    if (part1.partMismatch || part2.partMismatch) {
+        warnings.push('El número de parte del nombre no concuerda con la extensión del archivo.');
+    }
+    return { compatible: true, warnings, reason: '', domain: part1.domain, domainKey: part1.domainKey };
+}
+// ===== END MDR FILE NAMING =====
 
 // ============================================================================
 // MDR PART 1 (.docx) — "the why": business context, roles, processes and flows.
@@ -1611,6 +1774,7 @@ async function loadPart1Docx(file) {
 
     PART1.loaded = true;
     PART1.fileName = file.name;
+    PART1.fileInfo = parseMdrFileName(file.name);
     PART1.sections = sections;
     PART1.tree = docxBuildTree(sections);
     PART1.images = images;
@@ -1638,6 +1802,148 @@ async function loadPart1Docx(file) {
 // ============================================================================
 
 const NavState = { part: 2, sectionId: '' };
+
+// ===== Convergence =====
+// Where the two parts meet. Part 2 knows every message and its structure; Part 1
+// explains why it exists. They are joined on two keys the documents share: the
+// message id (sese.007.001.09) and the long name without its version suffix
+// (TransferInConfirmation), which is how Part 1 prose refers to messages.
+const CONVERGENCE = { built: false, messages: [], orphanSections: 0 };
+
+function messageBaseName(name) {
+    return String(name || '').replace(/V\d+$/, '');
+}
+
+function businessContextFor(msgId) {
+    if (!CONVERGENCE.built) return null;
+    return CONVERGENCE.messages.find(item => item.msgId === msgId) || null;
+}
+
+// The business half of the convergence, rendered inside the technical message
+// screen: which flows use this message, who takes part, and a way into the prose.
+function renderBusinessContextPanel(msgId) {
+    const context = businessContextFor(msgId);
+    if (!context || !context.sections.length) return '';
+
+    const flowsHtml = context.flows.length
+        ? context.flows.slice(0, 4).map(entry => {
+            const steps = entry.flow.steps.slice(0, 6).map(step => {
+                const label = step.title || step.message || '';
+                const route = step.from
+                    ? `${escapeHtml(step.from)}${step.to ? ` \u2192 ${escapeHtml(step.to)}` : ''}`
+                    : step.actors.map(actor => escapeHtml(actor)).join(', ');
+                return `<li><strong>${escapeHtml(label)}</strong>${route ? ` <span class="bc-route">${route}</span>` : ''}</li>`;
+            }).join('');
+            return `<div class="bc-flow">
+                <button type="button" class="bc-flow-title" onclick="openPart1Section('${entry.section.id}');setNavPart(1)">
+                    ${escapeHtml(entry.section.number ? `${entry.section.number}. ` : '')}${escapeHtml(entry.section.title)} &rarr;
+                </button>
+                <ol class="bc-steps">${steps}</ol>
+                ${entry.flow.steps.length > 6 ? `<span class="bc-more">+${entry.flow.steps.length - 6} pasos más</span>` : ''}
+            </div>`;
+        }).join('')
+        : '';
+
+    const sectionChips = context.sections.slice(0, 12).map(section =>
+        `<button type="button" class="bc-chip" onclick="openPart1Section('${section.id}');setNavPart(1)">
+            ${escapeHtml(section.number ? `${section.number}. ` : '')}${escapeHtml(section.title)}
+        </button>`).join('');
+
+    return `<section class="bc-panel">
+        <button type="button" class="bc-head" aria-expanded="false" onclick="toggleBusinessContext(this)">
+            <span class="bc-head-main">
+                <span class="bc-badge">1</span>
+                <span>
+                    <strong>Contexto de negocio</strong>
+                    <small>Por qué existe este mensaje, según la Parte 1</small>
+                </span>
+            </span>
+            <span class="bc-head-meta">
+                ${context.flows.length ? `<span class="p1-chip">${context.flows.length} flujo${context.flows.length === 1 ? '' : 's'}</span>` : ''}
+                <span class="p1-chip">${context.sections.length} sección${context.sections.length === 1 ? '' : 'es'}</span>
+                <span class="tree-toggle scope-usage-chevron" aria-hidden="true">&#9656;</span>
+            </span>
+        </button>
+        <div class="bc-body hidden">
+            ${context.actors.length ? `<div class="bc-actors">
+                <span class="bc-label">Participan</span>
+                ${context.actors.map(actor => `<span class="p1-actor-tag">${escapeHtml(actor)}</span>`).join('')}
+            </div>` : ''}
+            ${flowsHtml}
+            <div class="bc-sections">
+                <span class="bc-label">Aparece en</span>
+                ${sectionChips}
+            </div>
+        </div>
+    </section>`;
+}
+
+function toggleBusinessContext(button) {
+    const body = button.nextElementSibling;
+    if (!body) return;
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', String(!expanded));
+    body.classList.toggle('hidden', expanded);
+}
+
+function buildConvergence() {
+    CONVERGENCE.messages = [];
+    CONVERGENCE.built = false;
+    if (!PART1.loaded || !Object.keys(MDR.messages).length) return;
+
+    // Index Part 1 once by both keys, instead of scanning it per message.
+    const byToken = new Map();
+    const addHit = (token, section) => {
+        const key = token.toLowerCase();
+        if (!byToken.has(key)) byToken.set(key, new Set());
+        byToken.get(key).add(section);
+    };
+    const idPattern = /\b[a-z]{4}\.\d{3}\.\d{3}\.\d{2}\b/g;
+    const namePattern = /\b([A-Z][A-Za-z]{6,})\b/g;
+
+    PART1.sections.forEach(section => {
+        const text = [section.title, ...section.blocks.map(block =>
+            block.kind === 'xml' ? '' : (block.text || ''))].join(' ');
+        if (!text) return;
+        (text.match(idPattern) || []).forEach(id => addHit(id, section));
+        let match;
+        namePattern.lastIndex = 0;
+        while ((match = namePattern.exec(text)) !== null) addHit(match[1], section);
+    });
+
+    Object.entries(MDR.messages).forEach(([msgId, msg]) => {
+        const base = messageBaseName(msg.name);
+        const sections = new Set();
+        (byToken.get(msgId.toLowerCase()) || []).forEach(section => sections.add(section));
+        if (base) (byToken.get(base.toLowerCase()) || []).forEach(section => sections.add(section));
+
+        const ordered = PART1.sections.filter(section => sections.has(section));
+        // A flow is what makes the link useful: it shows the message in context.
+        const flows = ordered
+            .map(section => ({ section, flow: part1BuildFlow(section) }))
+            .filter(item => item.flow);
+        const actors = new Set();
+        flows.forEach(item => item.flow.participants.forEach(participant => actors.add(participant.name)));
+
+        CONVERGENCE.messages.push({
+            msgId,
+            name: msg.name,
+            base,
+            definition: msg.definition || '',
+            blocks: Object.keys(msg.buildingBlocks || {}).length,
+            elements: (msg.elements || []).length,
+            constraints: Object.keys(msg.constraints || {}).length,
+            sections: ordered,
+            flows,
+            actors: [...actors]
+        });
+    });
+
+    // Most useful first: messages with business context on top.
+    CONVERGENCE.messages.sort((left, right) =>
+        right.sections.length - left.sections.length || left.msgId.localeCompare(right.msgId));
+    CONVERGENCE.built = true;
+}
 
 // ISO 20022 message identifiers (camt.052.001.14), so the business flows can
 // link into the technical structure held by Part 2.
@@ -1674,9 +1980,14 @@ function renderPart1Outline(filter) {
     container.innerHTML = visible.map(section => {
         const diagrams = section.blocks.filter(block => block.kind === 'diagram').length;
         const active = section.id === NavState.sectionId ? ' active' : '';
+        // A flow marker tells you where the explained step-by-step content is,
+        // which is what makes the outline usable for analysis.
+        const hasFlow = section.blocks.some(block => block.kind === 'table')
+            || section.blocks.some(block => block.kind === 'text' && /\bsends?\b/i.test(block.text));
         return `<button type="button" class="p1-outline-item${active}" data-level="${section.level}"
                 data-section="${section.id}" onclick="openPart1Section('${section.id}')" title="${escapeHtml(section.title)}">
             ${section.number ? `<span class="p1-outline-num">${escapeHtml(section.number)}</span>` : ''}${escapeHtml(section.title)}
+            ${hasFlow ? '<span class="p1-outline-badge is-flow" title="Incluye un flujo explicado paso a paso">&#8644;</span>' : ''}
             ${diagrams ? `<span class="p1-outline-badge" title="${diagrams} diagrama(s)">&#9635; ${diagrams}</span>` : ''}
         </button>`;
     }).join('');
@@ -2366,6 +2677,8 @@ function routePartFile(file, expectedPart) {
 
 async function startPart1Processing(file) {
     try {
+        // Only the business side is reset: an already loaded PDF must survive.
+        resetPart1State();
         await loadPart1Docx(file);
         const stats = PART1.stats;
         setPartState(1, 'ok', `${file.name} — ${stats.sections} secciones, ${stats.diagrams} diagramas`);
@@ -2373,20 +2686,116 @@ async function startPart1Processing(file) {
         console.error(error);
         setPartState(1, 'error', error && error.message ? error.message : 'No se pudo leer el documento.');
     }
+    evaluatePairing();
+}
+
+// ===== Pairing gate =====
+// Result of comparing the two loaded files. When both are present the domains
+// must match, otherwise the navigator stays disabled on purpose.
+const PAIRING = { checked: false, compatible: false, reason: '', warnings: [], domain: '' };
+
+function pairingState() {
+    const hasPart1 = PART1.loaded;
+    const hasPart2 = Object.keys(MDR.messages).length > 0;
+    if (hasPart1 && hasPart2) return 'both';
+    if (hasPart1) return 'part1';
+    if (hasPart2) return 'part2';
+    return 'none';
+}
+
+function evaluatePairing() {
+    PAIRING.checked = false;
+    PAIRING.compatible = false;
+    PAIRING.reason = '';
+    PAIRING.warnings = [];
+    PAIRING.domain = '';
+
+    if (pairingState() === 'both') {
+        const result = compareMdrFiles(PART1.fileInfo, MDR.fileInfo);
+        PAIRING.checked = true;
+        PAIRING.compatible = result.compatible;
+        PAIRING.reason = result.reason;
+        PAIRING.warnings = result.warnings || [];
+        PAIRING.domain = result.domain || '';
+        if (result.compatible) buildConvergence();
+    }
+    renderPairingPanel();
     refreshOpenNavigatorButton();
+}
+
+function renderPairingPanel() {
+    const panel = document.getElementById('pairingPanel');
+    if (!panel) return;
+    const state = pairingState();
+
+    if (state === 'none') {
+        // The third option is announced up front so it is discoverable.
+        panel.className = 'pairing-panel is-hint';
+        panel.innerHTML = `<div class="pairing-title"><span class="pairing-badge">+</span> Carga las dos partes (opcional)</div>
+            <p>Con <strong>las dos partes del mismo dominio</strong>, las vistas de negocio y técnica quedan
+            enlazadas: cada mensaje muestra los flujos donde participa y cada flujo lleva a la estructura del mensaje.</p>
+            <p class="pairing-note">Los archivos deben conservar el nombre publicado por ISO 20022, por ejemplo
+            <code>ISO20022_MDRPart1_InvestmentFunds_2024_2025_v2.docx</code> y
+            <code>ISO20022_MDRPart2_Investment-Funds_2025_2026_v2.pdf</code>.</p>`;
+        panel.classList.remove('hidden');
+        return;
+    }
+
+    if (state !== 'both') {
+        const loadedInfo = state === 'part1' ? PART1.fileInfo : MDR.fileInfo;
+        const missing = state === 'part1' ? 'la Parte 2 (PDF)' : 'la Parte 1 (Word)';
+        const domain = loadedInfo && loadedInfo.ok ? loadedInfo.domain : '';
+        panel.className = 'pairing-panel is-hint';
+        panel.innerHTML = `<div class="pairing-title"><span class="pairing-badge">+</span> Enlazar las dos partes</div>
+            <p>${domain
+                ? `Dominio detectado: <strong>${escapeHtml(domain)}</strong>. Añade ${missing} <em>del mismo dominio</em> para enlazar negocio y estructura.`
+                : `El nombre del archivo no sigue la convención ISO 20022, así que no se puede comprobar el dominio. Añade ${missing} para continuar.`}</p>`;
+        panel.classList.remove('hidden');
+        return;
+    }
+
+    if (!PAIRING.compatible) {
+        panel.className = 'pairing-panel is-error';
+        panel.innerHTML = `<div class="pairing-title">&#9888; No se pueden combinar estos documentos</div>
+            <p>${escapeHtml(PAIRING.reason)}</p>
+            <p class="pairing-note">Quita uno de los dos y carga su pareja del mismo dominio. El navegador
+            permanece deshabilitado para evitar mezclar información de dominios distintos.</p>`;
+        panel.classList.remove('hidden');
+        return;
+    }
+
+    const linked = CONVERGENCE.messages.filter(item => item.sections.length).length;
+    panel.className = 'pairing-panel is-ok';
+    panel.innerHTML = `<div class="pairing-title">&#10003; Dominio verificado: ${escapeHtml(PAIRING.domain)}</div>
+        <p>Las dos partes describen el mismo dominio y quedaron <strong>enlazadas</strong>:
+        ${linked} de ${CONVERGENCE.messages.length} mensajes muestran su contexto de negocio dentro de la vista técnica.</p>
+        ${PAIRING.warnings.length
+            ? `<ul class="pairing-warnings">${PAIRING.warnings.map(w => `<li>&#9888; ${escapeHtml(w)}</li>`).join('')}</ul>`
+            : ''}`;
+    panel.classList.remove('hidden');
 }
 
 function refreshOpenNavigatorButton() {
     const button = document.getElementById('openNavigatorBtn');
     if (!button) return;
-    const ready = PART1.loaded || Object.keys(MDR.messages).length > 0;
+    const state = pairingState();
+    // Two incompatible documents must not open the navigator at all.
+    const blocked = state === 'both' && !PAIRING.compatible;
+    const ready = state !== 'none' && !blocked;
     button.classList.toggle('hidden', !ready);
+    if (ready) {
+        button.textContent = state === 'both'
+            ? 'Abrir el navegador (2 partes) \u2192'
+            : 'Abrir el navegador \u2192';
+    }
 }
 
 // Opens the navigator on whichever part is available.
 function enterNavigator() {
-    if (Object.keys(MDR.messages).length > 0) { showNavigator(); return; }
-    if (PART1.loaded) { showNavigator(); return; }
+    const state = pairingState();
+    if (state === 'none') return;
+    if (state === 'both' && !PAIRING.compatible) return;
+    showNavigator();
 }
 
 async function startProcessing(file) {
@@ -2394,9 +2803,10 @@ async function startProcessing(file) {
         setPartState(2, 'error', 'Falta la librería pdf.js: hace falta conexión a internet la primera vez que se abre el archivo.');
         return;
     }
-    // Single choke point for every PDF load path (click, drag & drop, reload
-    // after Home), so a previous report can never leak into this one.
-    resetMdrState();
+    // Only the technical side is reset: an already loaded Part 1 must survive.
+    resetPart2State();
+    MDR.fileName = file.name;
+    MDR.fileInfo = parseMdrFileName(file.name);
     setPartState(2, 'busy', 'Procesando el PDF...');
     $loadStatus.classList.remove('hidden');
     updateProgress(0, 'Cargando PDF...');
@@ -2429,11 +2839,18 @@ async function startProcessing(file) {
         resolveBuildingBlockMappings();
         resolveCodeSetMappings();
         attachElementDefinitions();
-        updateProgress(100, 'Completado. Cargando navegador...');
-        await new Promise(r => setTimeout(r, 300));
-        showNavigator();
+        updateProgress(100, 'Completado.');
+        await new Promise(r => setTimeout(r, 200));
+        $loadStatus.classList.add('hidden');
+        // Do not jump into the navigator: that made it impossible to load the
+        // Word afterwards. The user decides when to open it.
+        const count = Object.keys(MDR.messages).length;
+        setPartState(2, 'ok', `${file.name} — ${count} mensaje${count === 1 ? '' : 's'}`);
+        evaluatePairing();
     } catch(err) {
-        updateProgress(0, 'Error: ' + err.message);
+        updateProgress(0, '');
+        $loadStatus.classList.add('hidden');
+        setPartState(2, 'error', err && err.message ? err.message : 'No se pudo leer el PDF.');
         console.error(err);
     }
 }
@@ -3981,6 +4398,49 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 9000) {
     }
 }
 
+// ===== Rate limiting =====
+// A 429 ("too many requests") used to count as an ordinary failure: the provider
+// only lost priority and was called again on the very next chunk, so the app kept
+// hammering a service that had already said stop. Now the status travels with the
+// error and the provider is put on hold.
+const RATE_LIMIT_STATUSES = [429, 503];
+const RATE_LIMIT_DEFAULT_WAIT = 60000;
+
+function throwHttpError(providerName, response) {
+    const error = new Error(`${providerName} HTTP ${response.status}`);
+    error.status = response.status;
+    // Honour Retry-After when the service sends it.
+    const retryAfter = Number(response.headers && response.headers.get('Retry-After'));
+    if (Number.isFinite(retryAfter) && retryAfter > 0) error.retryAfterMs = retryAfter * 1000;
+    throw error;
+}
+
+function providerCooldownRemaining(name) {
+    const until = MDR.translation.rateLimitedUntil.get(name) || 0;
+    return Math.max(0, until - Date.now());
+}
+
+function markProviderRateLimited(name, waitMs) {
+    const state = MDR.translation;
+    const wait = waitMs || RATE_LIMIT_DEFAULT_WAIT;
+    state.rateLimitedUntil.set(name, Date.now() + wait);
+    // Back off globally too: parallel requests are what triggers the limit.
+    state.maxConcurrent = 1;
+    updateTranslateStatus();
+}
+
+function translationCooldownMs() {
+    const remaining = TRANSLATION_PROVIDERS.map(provider => providerCooldownRemaining(provider.name));
+    // Only meaningful when every provider is on hold.
+    return remaining.every(value => value > 0) ? Math.min(...remaining) : 0;
+}
+
+function restoreConcurrencyIfHealthy() {
+    const state = MDR.translation;
+    const anyLimited = TRANSLATION_PROVIDERS.some(provider => providerCooldownRemaining(provider.name) > 0);
+    if (!anyLimited) state.maxConcurrent = state.baseConcurrent;
+}
+
 const TRANSLATION_PROVIDERS = [
     {
         name: 'MyMemory',
@@ -3988,7 +4448,7 @@ const TRANSLATION_PROVIDERS = [
             const params = new URLSearchParams({ q: chunk, langpair: 'en|es' });
             if (MDR.translation.email) params.set('de', MDR.translation.email);
             const response = await fetchWithTimeout(`https://api.mymemory.translated.net/get?${params.toString()}`);
-            if (!response.ok) throw new Error(`MyMemory HTTP ${response.status}`);
+            if (!response.ok) throwHttpError('MyMemory', response);
             const data = await response.json();
             const translated = data && data.responseData && data.responseData.translatedText;
             if (!translated || /MYMEMORY WARNING|QUOTA|INVALID|NO QUERY SPECIFIED/i.test(translated)) {
@@ -4002,7 +4462,7 @@ const TRANSLATION_PROVIDERS = [
         async translate(chunk) {
             const params = new URLSearchParams({ client: 'gtx', sl: 'en', tl: 'es', dt: 't', q: chunk });
             const response = await fetchWithTimeout(`https://translate.googleapis.com/translate_a/single?${params.toString()}`);
-            if (!response.ok) throw new Error(`GoogleWeb HTTP ${response.status}`);
+            if (!response.ok) throwHttpError('GoogleWeb', response);
             const data = await response.json();
             const segments = Array.isArray(data) && Array.isArray(data[0]) ? data[0] : null;
             if (!segments) throw new Error('GoogleWeb unexpected payload');
@@ -4015,7 +4475,7 @@ const TRANSLATION_PROVIDERS = [
         name: 'Lingva',
         async translate(chunk) {
             const response = await fetchWithTimeout(`https://lingva.ml/api/v1/en/es/${encodeURIComponent(chunk)}`);
-            if (!response.ok) throw new Error(`Lingva HTTP ${response.status}`);
+            if (!response.ok) throwHttpError('Lingva', response);
             const data = await response.json();
             const translated = data && data.translation ? String(data.translation).trim() : '';
             if (!translated) throw new Error('Lingva empty translation');
@@ -4030,7 +4490,7 @@ const TRANSLATION_PROVIDERS = [
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ q: chunk, source: 'en', target: 'es', format: 'text' })
             });
-            if (!response.ok) throw new Error(`LibreTranslate HTTP ${response.status}`);
+            if (!response.ok) throwHttpError('LibreTranslate', response);
             const data = await response.json();
             const translated = data && data.translatedText ? String(data.translatedText).trim() : '';
             if (!translated) throw new Error('LibreTranslate empty translation');
@@ -4040,13 +4500,23 @@ const TRANSLATION_PROVIDERS = [
 ];
 
 // Providers that keep failing are tried last, so the first healthy service
-// becomes the effective primary for the rest of the session.
+// becomes the effective primary. Providers that returned 429 are skipped
+// entirely until their cooldown expires.
 function orderedTranslationProviders() {
     const failures = MDR.translation.providerFailures;
-    return TRANSLATION_PROVIDERS
-        .map((provider, index) => ({ provider, index, failures: failures.get(provider.name) || 0 }))
-        .sort((left, right) => left.failures - right.failures || left.index - right.index)
-        .map(entry => entry.provider);
+    restoreConcurrencyIfHealthy();
+    const ranked = TRANSLATION_PROVIDERS
+        .map((provider, index) => ({
+            provider, index,
+            failures: failures.get(provider.name) || 0,
+            cooldown: providerCooldownRemaining(provider.name)
+        }))
+        .sort((left, right) => left.failures - right.failures || left.index - right.index);
+    const healthy = ranked.filter(entry => entry.cooldown === 0);
+    // If every provider is on hold, try the one that recovers soonest rather
+    // than failing outright.
+    const usable = healthy.length ? healthy : ranked.slice().sort((left, right) => left.cooldown - right.cooldown).slice(0, 1);
+    return usable.map(entry => entry.provider);
 }
 
 async function translateChunk(chunk) {
@@ -4056,14 +4526,23 @@ async function translateChunk(chunk) {
         try {
             const translated = await provider.translate(chunk);
             state.providerFailures.set(provider.name, 0);
+            state.rateLimitedUntil.delete(provider.name);
             state.lastProvider = provider.name;
             return translated;
         } catch (error) {
+            const status = error && error.status;
+            if (RATE_LIMIT_STATUSES.includes(status)) {
+                markProviderRateLimited(provider.name, error.retryAfterMs);
+                errors.push(`${provider.name}: límite de peticiones (${status})`);
+                continue;
+            }
             state.providerFailures.set(provider.name, (state.providerFailures.get(provider.name) || 0) + 1);
             errors.push(`${provider.name}: ${error && error.message ? error.message : error}`);
         }
     }
-    throw new Error(`Todos los servicios de traducción fallaron (${errors.join(' | ')})`);
+    const failure = new Error(`Todos los servicios de traducción fallaron (${errors.join(' | ')})`);
+    failure.rateLimited = translationCooldownMs() > 0;
+    throw failure;
 }
 
 async function translateText(text) {
@@ -4125,6 +4604,18 @@ function updateTranslateStatus() {
         count + target.querySelectorAll('[data-translation-state="failed"]').length, 0);
     state.failed = failedInView;
     if (!state.enabled) { status.textContent = ''; return; }
+    // A rate limit is not a failure of the tool, so it is reported apart with the
+    // wait remaining; otherwise the user retries and makes it worse.
+    const cooldown = translationCooldownMs();
+    if (cooldown > 0) {
+        const seconds = Math.ceil(cooldown / 1000);
+        status.innerHTML = `&#9888; Límite de la API alcanzado &middot; espera ${seconds}s ` +
+            `<button type="button" class="btn-retry-translation" onclick="retryFailedTranslations()">Reintentar</button>`;
+        status.title = 'Los servicios gratuitos de traducción limitan cuántas peticiones se pueden hacer. ' +
+            'El texto se queda en inglés hasta que expire la espera.';
+        return;
+    }
+    status.title = '';
     if (state.pending > 0) {
         status.textContent = `Traduciendo… (${state.pending})`;
     } else if (state.failed > 0) {
@@ -4408,43 +4899,47 @@ function isType(s) {
 function showNavigator() {
     $uploadScreen.classList.add('hidden');
     $navScreen.classList.remove('hidden');
-    // Open on whichever part was loaded. Defaulting to the message list left the
-    // screen blank when only the Word document was provided.
-    const hasPart2 = Object.keys(MDR.messages).length > 0;
-    setNavPart(hasPart2 ? 2 : 1);
+    // Open on whichever part is loaded; the technical view wins when both are.
+    const availability = navPartAvailability();
+    setNavPart(availability[2] ? 2 : 1);
 }
 
 // ===== Part switching (1 = business / Word, 2 = technical / PDF) =====
 
+function navPartAvailability() {
+    return { 1: PART1.loaded, 2: Object.keys(MDR.messages).length > 0 };
+}
+
 function updatePartSwitch() {
-    const hasPart2 = Object.keys(MDR.messages).length > 0;
-    const availability = { 1: PART1.loaded, 2: hasPart2 };
+    const availability = navPartAvailability();
+    const titles = {
+        1: 'Parte 1: contexto de negocio, actores y flujos',
+        2: 'Parte 2: estructura técnica de los mensajes'
+    };
     [1, 2].forEach(part => {
         const button = document.getElementById(`partSwitchBtn${part}`);
         if (!button) return;
         button.disabled = !availability[part];
         button.classList.toggle('active', NavState.part === part);
         button.setAttribute('aria-selected', String(NavState.part === part));
-        button.title = availability[part]
-            ? (part === 1 ? 'Parte 1: contexto de negocio, actores y flujos' : 'Parte 2: estructura técnica de los mensajes')
-            : `Parte ${part} no cargada`;
+        button.title = availability[part] ? titles[part] : `Parte ${part} no cargada`;
     });
-    // Only show the switcher when there is something to switch between.
     const wrapper = document.getElementById('partSwitch');
-    if (wrapper) wrapper.classList.toggle('hidden', !(PART1.loaded && hasPart2));
+    // Only worth showing when both views are reachable.
+    if (wrapper) wrapper.classList.toggle('hidden', !(availability[1] && availability[2]));
 }
 
 function setNavPart(part) {
-    const hasPart2 = Object.keys(MDR.messages).length > 0;
-    if (part === 1 && !PART1.loaded) return;
-    if (part === 2 && !hasPart2) return;
+    const availability = navPartAvailability();
+    if (!availability[part]) return;
     NavState.part = part;
 
-    const messageList = document.getElementById('messageList');
-    const outline = document.getElementById('part1Outline');
+    const panes = { 2: 'messageList', 1: 'part1Outline' };
+    Object.entries(panes).forEach(([key, id]) => {
+        const node = document.getElementById(id);
+        if (node) node.classList.toggle('hidden', Number(key) !== part);
+    });
     const title = document.getElementById('sidebarTitle');
-    if (messageList) messageList.classList.toggle('hidden', part !== 2);
-    if (outline) outline.classList.toggle('hidden', part !== 1);
     if (title) title.textContent = part === 1 ? 'Contenido' : 'Mensajes';
     if ($searchInput) {
         $searchInput.placeholder = part === 1 ? 'Buscar sección, actor o flujo...' : 'Buscar mensaje...';
@@ -4467,6 +4962,20 @@ function setNavPart(part) {
 // definitions, datatypes, CodeSets). Without wiping them, a second MDR would be
 // merged into the first one and resolve elements against foreign definitions.
 function resetMdrState() {
+    resetPart2State();
+    resetPart1State();
+    NavState.part = 2;
+    NavState.sectionId = '';
+    PAIRING.checked = false;
+    PAIRING.compatible = false;
+    PAIRING.reason = '';
+    PAIRING.warnings = [];
+    PAIRING.domain = '';
+}
+
+// Only the technical side (the PDF). Loading a PDF used to call the combined
+// reset, which silently wiped an already loaded Part 1.
+function resetPart2State() {
     MDR.messages = {};
     MDR.allElements = [];
     MDR.blockDefinitions = [];
@@ -4480,6 +4989,8 @@ function resetMdrState() {
     MDR.nextElementDetailId = 1;
     MDR.currentMessage = null;
     MDR.navHistory = [];
+    MDR.fileName = '';
+    MDR.fileInfo = null;
 
     // Drop in-flight translation work; the text cache is kept because MDR prose
     // repeats across reports and re-translating it would waste API quota.
@@ -4494,11 +5005,17 @@ function resetMdrState() {
     // The schema viewer holds nodes that point at the discarded elements.
     if (typeof schemaResetSession === 'function') schemaResetSession('');
     if (typeof SchemaViewer === 'object' && SchemaViewer) SchemaViewer.root = null;
+    CONVERGENCE.built = false;
+    CONVERGENCE.messages = [];
+}
 
-    // Part 1: release the diagram blob URLs, or they leak for the whole session.
+// Only the business side (the Word).
+function resetPart1State() {
+    // Release the diagram blob URLs, or they leak for the whole session.
     PART1.images.forEach(image => { if (image.url) URL.revokeObjectURL(image.url); });
     PART1.loaded = false;
     PART1.fileName = '';
+    PART1.fileInfo = null;
     PART1.title = '';
     PART1.approvedBy = '';
     PART1.sections = [];
@@ -4506,8 +5023,9 @@ function resetMdrState() {
     PART1.images = new Map();
     PART1.roles = [];
     PART1.stats = {};
-    NavState.part = 2;
-    NavState.sectionId = '';
+    PART1.__actorVocab = null;
+    CONVERGENCE.built = false;
+    CONVERGENCE.messages = [];
     closeFigureViewer();
 }
 
@@ -4633,7 +5151,7 @@ function renderMessageList(filter) {
     });
 }
 
-// One search box serving whichever part is active.
+// One search box serving whichever view is active.
 function filterMessages() {
     if (NavState.part === 1) { renderPart1Outline($searchInput.value); return; }
     renderMessageList($searchInput.value);
@@ -4668,9 +5186,20 @@ function navigateToMessage(msgId) {
     $breadcrumb.innerHTML = `<span class="crumb-current">${msgId} - ${msg.name}</span>`;
 
     // Main content
+    // Counts computed up front so the header can summarise the message at a glance.
+    const bbEntries = Object.entries(msg.buildingBlocks).map(([blockKey, bb]) => { bb.blockKey = blockKey; return bb; });
+    const rootCount = messageRootBuildingBlocks(msg, bbEntries).length;
+    const elementCount = msg.elements.length;
+    const constraintCount = Object.keys(msg.constraints).length;
+    const codeSetCount = Object.keys(msg.codeSets).length;
+
     let html = `<div class="msg-header">
         <div class="msg-header-top">
-            <div><h2>${msg.name}</h2><p class="msg-id-label">${msgId}</p></div>
+            <div>
+                <span class="p1-eyebrow">MDR Parte 2 &middot; El qué</span>
+                <h2>${msg.name}</h2>
+                <p class="msg-id-label">${msgId}</p>
+            </div>
             <div class="msg-header-actions">
                 <button type="button" class="btn-schema" onclick="openMessageSchema('${msgId}')" title="Visualiza el esquema JSON completo del mensaje, con todos sus anidamientos, tipos de dato, presencia y grupos SelectOneOf">
                     <span class="btn-schema-braces">{ }</span> Esquema JSON
@@ -4682,15 +5211,24 @@ function navigateToMessage(msgId) {
     }
     html += `</div>`;
 
+    // At-a-glance size of the message, mirroring the Part 1 overview.
+    html += `<div class="p1-overview">
+        <div class="p1-stat"><span class="p1-stat-value">${rootCount}</span><span class="p1-stat-label">Building blocks</span></div>
+        <div class="p1-stat"><span class="p1-stat-value">${elementCount}</span><span class="p1-stat-label">Campos</span></div>
+        <div class="p1-stat"><span class="p1-stat-value">${constraintCount}</span><span class="p1-stat-label">Constraints</span></div>
+        <div class="p1-stat"><span class="p1-stat-value">${codeSetCount}</span><span class="p1-stat-label">CodeSets</span></div>
+    </div>`;
+
     // Message-level functional context: it belongs to the message screen, right
     // before the Building Blocks list, and never inside a building block.
     html += renderScopeUsagePanel(msg);
+    // When Part 1 of the same domain is loaded, its business context is shown
+    // here instead of in a separate view: the answer appears where the question is.
+    html += renderBusinessContextPanel(msgId);
 
-    // Building blocks hierarchy and search
-    const bbs = Object.entries(msg.buildingBlocks).map(([blockKey, bb]) => {
-        bb.blockKey = blockKey;
-        return bb;
-    }).sort((left, right) => {
+    // Building blocks hierarchy and search (bbEntries was already collected for
+    // the header counts; sorting it here keeps a single pass over the catalogue).
+    const bbs = bbEntries.slice().sort((left, right) => {
         const leftOrder = Number.isFinite(left.sourceOrder) ? left.sourceOrder : Number.MAX_SAFE_INTEGER;
         const rightOrder = Number.isFinite(right.sourceOrder) ? right.sourceOrder : Number.MAX_SAFE_INTEGER;
         if (leftOrder !== rightOrder) return leftOrder - rightOrder;
@@ -6527,6 +7065,7 @@ function schemaApplyFilter() {
     const elements = Array.from(pane.querySelectorAll('.sch-node'));
     if (!terms.length) {
         elements.forEach(element => element.classList.remove('sch-hidden'));
+        schemaClearHighlight(pane);
         schemaUpdateStatus();
         return;
     }
@@ -6551,7 +7090,69 @@ function schemaApplyFilter() {
         }
     });
     elements.forEach(element => element.classList.toggle('sch-hidden', !keep.has(element)));
+    schemaHighlight(pane, terms);
     schemaUpdateStatus(keep.size);
+}
+
+// ===== Search highlighting =====
+// Wraps the matching text in <mark> inside the parts a user actually reads: the
+// key, the XML tag and the type label. The original markup is stashed on the
+// node so clearing the search restores it exactly.
+const SCHEMA_HIGHLIGHT_TARGETS = '.sch-key-long, .sch-key-tag, .sch-type';
+
+function schemaClearHighlight(root) {
+    root.querySelectorAll('[data-hl-orig]').forEach(node => {
+        node.innerHTML = node.dataset.hlOrig;
+        delete node.dataset.hlOrig;
+    });
+}
+
+function schemaHighlight(root, terms) {
+    if (!root) return;
+    schemaClearHighlight(root);
+    if (!terms || !terms.length) return;
+    // Longest first, so "obligatorio" wins over "o" when both are typed.
+    const ordered = terms.slice().sort((a, b) => b.length - a.length);
+
+    root.querySelectorAll('.sch-node:not(.sch-hidden)').forEach(nodeElement => {
+        nodeElement.querySelectorAll(SCHEMA_HIGHLIGHT_TARGETS).forEach(target => {
+            const text = target.textContent;
+            const normalized = normalizeBlockSearch(text);
+            if (!ordered.some(term => normalized.includes(term))) return;
+
+            // Match on the accent-insensitive form but cut the original string,
+            // so accents and casing survive the highlight.
+            const ranges = [];
+            ordered.forEach(term => {
+                let from = 0;
+                for (;;) {
+                    const at = normalized.indexOf(term, from);
+                    if (at === -1) break;
+                    ranges.push([at, at + term.length]);
+                    from = at + term.length;
+                }
+            });
+            if (!ranges.length) return;
+            ranges.sort((a, b) => a[0] - b[0]);
+            const merged = [];
+            ranges.forEach(range => {
+                const last = merged[merged.length - 1];
+                if (last && range[0] <= last[1]) last[1] = Math.max(last[1], range[1]);
+                else merged.push(range.slice());
+            });
+
+            target.dataset.hlOrig = target.innerHTML;
+            let html = '';
+            let cursor = 0;
+            merged.forEach(([start, end]) => {
+                html += escapeHtml(text.slice(cursor, start));
+                html += `<mark class="sch-hit">${escapeHtml(text.slice(start, end))}</mark>`;
+                cursor = end;
+            });
+            html += escapeHtml(text.slice(cursor));
+            target.innerHTML = html;
+        });
+    });
 }
 
 function schemaSearchChanged() {
