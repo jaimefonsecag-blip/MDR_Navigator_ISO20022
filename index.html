@@ -943,7 +943,9 @@ body.theme-light .cf-overlay { background:rgba(14,21,51,0.38); }
 .sch-empty-state { padding:2rem; text-align:center; color:var(--text-dim); font-size:0.85rem; }
 </style>
 </head>
-<body>
+<!-- Light is the default theme. Setting the class here rather than from JS avoids
+     a flash of the dark palette before initTheme() runs. -->
+<body class="theme-light">
 <!-- UPLOAD SCREEN -->
 <div id="uploadScreen">
   <div class="upload-container">
@@ -1307,7 +1309,9 @@ function toggleTheme() {
 function initTheme() {
     let saved = null;
     try { saved = localStorage.getItem('mdr-theme'); } catch (e) { saved = null; }
-    const isLight = saved === 'light';
+    // Light is the default: only an explicitly saved "dark" switches it off.
+    // <body> already carries .theme-light, so there is no flash before this runs.
+    const isLight = saved !== 'dark';
     document.body.classList.toggle('theme-light', isLight);
     applyThemeButtonLabel(isLight);
 }
