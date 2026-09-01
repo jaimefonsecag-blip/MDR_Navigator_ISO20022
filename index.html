@@ -734,6 +734,31 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 .p1-bullets li::before { content:''; position:absolute; left:0; top:0.6rem; width:6px; height:6px; border-radius:50%; background:var(--accent); }
 .p1-caption { font-size:0.82rem; font-weight:700; color:var(--accent); margin:1rem 0 0.4rem; }
 
+/* Concept note: what a category of the standard means. Written by the navigator,
+   so it is visually separated from the text of the document. */
+.p1-concept {
+  margin:0 0 1.3rem; padding:0.85rem 1rem;
+  background:var(--bg-secondary); border:1px solid var(--border);
+  border-left:3px solid var(--brand-purple); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+}
+.p1-concept-head { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:0.55rem; }
+.p1-concept-icon {
+  flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  width:1.5rem; height:1.5rem; border-radius:50%; font-size:0.85rem; font-weight:800;
+  color:var(--on-accent); background:var(--accent-gradient);
+}
+.p1-concept-head strong { display:block; font-size:0.92rem; color:var(--text-primary); }
+.p1-concept-head small { display:block; margin-top:0.1rem; font-size:0.71rem; color:var(--text-dim); }
+.p1-concept-lead { margin:0 0 0.55rem; font-size:0.9rem; line-height:1.65; color:var(--text-primary); }
+.p1-concept-points { margin:0; padding-left:0; list-style:none; }
+.p1-concept-points li { position:relative; padding-left:1.1rem; margin-bottom:0.35rem; font-size:0.86rem; line-height:1.6; color:var(--text-secondary); }
+.p1-concept-points li:last-child { margin-bottom:0; }
+.p1-concept-points li::before { content:''; position:absolute; left:0; top:0.55rem; width:5px; height:5px; border-radius:50%; background:var(--brand-purple); }
+.p1-concept-points strong { color:var(--text-primary); }
+/* One-line version, used in the list of subsections of the parent chapter. */
+.p1-concept-hint { margin-top:0.3rem; font-size:0.78rem; line-height:1.5; color:var(--text-secondary); }
+
 /* Diagrams */
 .p1-figure { margin:0 0 1.2rem; padding:0.6rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); }
 /* Diagrams are shown as a compact preview: full size lives in the zoom viewer,
@@ -774,6 +799,28 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 .p1-table thead th { color:var(--accent); background:var(--bg-panel); font-weight:700; position:sticky; top:0; }
 .p1-table tbody tr:hover { background:var(--bg-hover); }
 .p1-table td.is-xml { font-family:'Cascadia Code','Consolas',monospace; font-size:0.76rem; white-space:pre-wrap; }
+/* Derived column: whether a MessageDefinition asks, answers or reports. */
+.p1-table th.p1-role-col { white-space:nowrap; cursor:help; }
+.p1-role-col-mark {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:0.95rem; height:0.95rem; margin-left:0.15rem; vertical-align:middle;
+  font-size:0.62rem; font-weight:800; color:var(--text-secondary);
+  border:1px solid var(--border-strong); border-radius:50%;
+}
+.p1-table td.is-role { white-space:nowrap; }
+/* Same tag in both parts: MessageDefinition tables (Part 1) and the message list
+   and header of Part 2. */
+.mdr-role-tag {
+  display:inline-block; padding:0.1rem 0.5rem; border-radius:99px; cursor:help;
+  font-size:0.7rem; font-weight:700; letter-spacing:0.2px; white-space:nowrap;
+}
+.mdr-role-tag.is-request { color:var(--brand-purple); background:var(--accent-dim); box-shadow:inset 0 0 0 1px var(--accent-dim); }
+.mdr-role-tag.is-response { color:var(--success); background:var(--success-dim); }
+.mdr-role-tag.is-report { color:var(--brand-blue); background:var(--tag-bg); }
+.mdr-role-tag.is-unknown { color:var(--text-dim); background:transparent; font-weight:600; }
+.msg-item-top { display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap; }
+.msg-item .mdr-role-tag { font-size:0.62rem; padding:0.02rem 0.4rem; }
+.msg-id-label .mdr-role-tag { margin-left:0.4rem; vertical-align:middle; }
 
 /* Flow explanation: steps and who does what */
 .p1-flow { margin-bottom:1.4rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; }
@@ -801,6 +848,10 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
   color:var(--brand-blue); background:var(--tag-bg); border-radius:99px;
 }
 .p1-actor-tag.is-strong { color:var(--on-accent); background:var(--accent-gradient); }
+/* The document did not name this end of the hop: said explicitly, never blank. */
+.p1-actor-tag.is-unknown { color:var(--text-dim); background:transparent; border:1px dashed var(--border); font-weight:600; font-style:italic; }
+/* Completed from the rest of the flow, not named in this sentence. */
+.p1-actor-tag.is-inferred { background:transparent; border:1px dashed currentColor; cursor:help; }
 
 /* Message references that bridge into Part 2 */
 .p1-msgref {
@@ -884,6 +935,18 @@ body.theme-light .cf-overlay { background:rgba(14,21,51,0.38); }
 /* Search hits inside the schema tree */
 .sch-hit { padding:0 1px; color:inherit; background:rgba(251,191,36,0.42); border-radius:3px; box-shadow:0 0 0 1px rgba(251,191,36,0.55); font-weight:700; }
 body.theme-light .sch-hit { background:rgba(250,204,21,0.55); box-shadow:0 0 0 1px rgba(180,83,9,0.35); }
+/* The matching row keeps its place in the tree: nothing is hidden, the row is
+   only marked so it can be spotted while scrolling. */
+.sch-node.sch-match > .sch-row, .sch-node.sch-match > .sch-open { background:rgba(251,191,36,0.13); box-shadow:inset 2px 0 0 rgba(251,191,36,0.85); }
+body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-match > .sch-open { background:rgba(250,204,21,0.2); box-shadow:inset 2px 0 0 rgba(180,83,9,0.6); }
+.sch-node.sch-match-current > .sch-row, .sch-node.sch-match-current > .sch-open { background:rgba(251,191,36,0.28); box-shadow:inset 2px 0 0 rgba(251,191,36,1), 0 0 0 1px rgba(251,191,36,0.7); }
+/* Match navigation */
+.sch-find { gap:0.15rem; }
+.sch-find[hidden] { display:none; }
+.btn-sch-nav { padding:0.3rem 0.5rem; background:var(--bg-secondary); border:1px solid var(--border); color:var(--text-secondary); border-radius:6px; cursor:pointer; font-size:0.8rem; line-height:1; }
+.btn-sch-nav:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+.btn-sch-nav:disabled { opacity:0.4; cursor:default; }
+.sch-find-count { min-width:3.2rem; text-align:center; color:var(--text-dim); font-size:0.72rem; font-variant-numeric:tabular-nums; }
 
 /* ===== Pairing panel on the upload screen ===== */
 .pairing-panel { margin-top:1.3rem; padding:0.9rem 1.1rem; text-align:left; border-radius:var(--radius-md); border:1px solid var(--border); border-left-width:3px; background:var(--bg-secondary); font-size:0.85rem; line-height:1.6; animation:fadeUp 0.3s var(--ease-out) both; }
@@ -1136,6 +1199,12 @@ body.theme-light .sch-hit { background:rgba(250,204,21,0.55); box-shadow:0 0 0 1
 
     <div class="sch-toolbar" id="schemaTreeToolbar">
       <input type="search" id="schemaSearch" class="sch-search" placeholder="Buscar campo, XML tag, tipo o constraint..." aria-label="Buscar en el esquema" autocomplete="off" />
+      <span class="sch-toolbar-group sch-find" id="schemaFindNav" hidden>
+        <button type="button" class="btn-sch-nav" onclick="schemaGotoMatch(-1)" title="Coincidencia anterior (Shift+Enter)" aria-label="Coincidencia anterior">&lsaquo;</button>
+        <span class="sch-find-count" id="schemaMatchCount" aria-live="polite">0/0</span>
+        <button type="button" class="btn-sch-nav" onclick="schemaGotoMatch(1)" title="Siguiente coincidencia (Enter)" aria-label="Siguiente coincidencia">&rsaquo;</button>
+        <button type="button" class="btn-sch" id="schemaOnlyMatchBtn" onclick="schemaToggleOnlyMatches()" title="Oculta las ramas sin coincidencias. Desactivado, el árbol completo sigue visible y solo se resalta lo encontrado">Solo coincidencias</button>
+      </span>
       <button type="button" class="btn-sch" onclick="schemaExpandAll()" title="Expande el árbol hasta la profundidad seleccionada">Expandir</button>
       <button type="button" class="btn-sch" onclick="schemaCollapseAll()">Contraer</button>
       <span class="sch-toolbar-group">
@@ -2031,19 +2100,127 @@ const P1_FUNCTIONAL_ACTORS = [
     'receiving party', 'delivering party', 'investor'
 ];
 
+// Head nouns that turn a noun phrase into a participant of an exchange. The
+// phrases themselves are read from the document being explained, so a domain the
+// app has never seen ("Clearing and Settlement Agent", "Creditor Agent") is
+// recognised without adding it to any list.
+const P1_ACTOR_HEADS = [
+    'agent', 'party', 'bank', 'institution', 'owner', 'servicer', 'investor', 'broker',
+    'dealer', 'custodian', 'depository', 'depositary', 'registrar', 'trustee',
+    'distributor', 'issuer', 'counterparty', 'intermediary', 'operator', 'participant',
+    'member', 'client', 'customer', 'provider', 'creditor', 'debtor', 'transferor',
+    'transferee', 'initiator', 'originator', 'beneficiary', 'house', 'manager',
+    'administrator', 'authority', 'sender', 'receiver'
+];
+const P1_ACTOR_HEAD_SET = new Set(P1_ACTOR_HEADS);
+// Heads specific enough to name an actor on their own ("the Debtor", "the Investor").
+// A bare "the party" or "the agent" is too vague to be a step of the flow.
+const P1_ACTOR_SOLO_HEADS = new Set([
+    'investor', 'transferor', 'transferee', 'creditor', 'debtor', 'intermediary',
+    'custodian', 'depository', 'depositary', 'registrar', 'trustee', 'distributor',
+    'issuer', 'beneficiary', 'originator', 'broker', 'initiator'
+]);
+// Qualifiers that point at an actor without naming one: "the same party" is not a
+// participant. Their presence anywhere in the phrase disqualifies it.
+const P1_ACTOR_VAGUE_WORDS = new Set([
+    'other', 'another', 'same', 'said', 'relevant', 'appropriate', 'respective',
+    'corresponding', 'first', 'second', 'third', 'new', 'original', 'initial', 'final',
+    'previous', 'next', 'following', 'above', 'given', 'latter', 'former', 'single',
+    'only', 'main', 'any', 'all', 'either', 'both', 'each', 'one', 'such', 'own'
+]);
+// Words that may lead a phrase but are not part of the name.
+const P1_ACTOR_LEAD_WORDS = new Set([
+    'the', 'a', 'an', 'its', 'their', 'his', 'her', 'this', 'that', 'these', 'those',
+    'and', 'or', 'of', 'to', 'from', 'by', 'in', 'on', 'with', 'for', 'as', 'at',
+    'is', 'are', 'be', 'been', 'which', 'who', 'whose', 'if', 'when',
+    ...P1_ACTOR_VAGUE_WORDS
+]);
+// The only words allowed to sit inside a compound actor name.
+const P1_ACTOR_JOIN_WORDS = new Set(['and', 'of', '&']);
+
+// "the clearing and settlement agent", "a receiving party": the determiner bounds
+// the start of the phrase and the head noun bounds the end.
+// The repetition is greedy so the longest valid phrase wins: "debtor agent", not
+// "debtor" (both heads, and the first one alone would truncate the name).
+const P1_ACTOR_NP_RE = new RegExp(
+    '\\b(?:the|a|an|its|their|his|her|this|each|both)\\s+'
+    + `((?:[A-Za-z][A-Za-z-]*\\s+){0,3}(?:${P1_ACTOR_HEADS.join('|')}))\\b`, 'gi');
+// "Clearing and Settlement Agent": a run of capitalised words, for the documents
+// that write the participants as proper nouns instead of in lower case.
+const P1_ACTOR_CAPS_RE = /\b[A-Z][A-Za-z]*(?:[ \t-]+(?:and|of|&)?[ \t]*[A-Z][A-Za-z]*)*\b/g;
+
+// Turns a raw noun phrase into an actor name, or '' when it does not name one.
+function part1CleanActorPhrase(raw) {
+    const words = String(raw || '').trim().split(/\s+/).filter(Boolean);
+    while (words.length > 1 && P1_ACTOR_LEAD_WORDS.has(words[0].toLowerCase())) words.shift();
+    if (!words.length) return '';
+    const head = words[words.length - 1].toLowerCase();
+    if (!P1_ACTOR_HEAD_SET.has(head)) return '';
+    if (words.length === 1 && !P1_ACTOR_SOLO_HEADS.has(head)) return '';
+    // "and" / "of" join a compound name ("Clearing and Settlement Agent"). Any other
+    // determiner or preposition inside means this is a clause, not a name:
+    // "the scenario involves an intermediary" does not name "Scenario ... Intermediary".
+    const interior = words.slice(0, -1).map(word => word.toLowerCase());
+    if (interior.some(word => P1_ACTOR_VAGUE_WORDS.has(word))) return '';
+    if (interior.some(word => P1_ACTOR_LEAD_WORDS.has(word) && !P1_ACTOR_JOIN_WORDS.has(word))) return '';
+    return words.join(' ').toLowerCase();
+}
+
+// Actor names present in this very sentence, whatever the domain of the MDR.
+function part1ActorPhrases(text) {
+    const source = String(text || '');
+    const found = [];
+    const collect = (regex, group) => {
+        regex.lastIndex = 0;
+        let match;
+        while ((match = regex.exec(source))) {
+            const raw = group === 0 ? match[0] : match[group];
+            if (!raw) continue;
+            const name = part1CleanActorPhrase(raw);
+            if (!name) continue;
+            // Index of the first word that survived the cleanup, so the "to <actor>"
+            // adjacency test below stays exact.
+            const rawAt = match.index + match[0].indexOf(raw);
+            const firstWord = name.split(' ')[0];
+            const inRaw = raw.toLowerCase().indexOf(firstWord);
+            found.push({ name, index: rawAt + (inRaw === -1 ? 0 : inRaw) });
+            if (regex.lastIndex === match.index) regex.lastIndex++;
+        }
+    };
+    collect(P1_ACTOR_NP_RE, 1);
+    collect(P1_ACTOR_CAPS_RE, 0);
+    return found;
+}
+
 function part1ActorVocabulary() {
     if (PART1.__actorVocab) return PART1.__actorVocab;
     const names = new Set(P1_FUNCTIONAL_ACTORS);
+    // How the document itself writes each name, so "CSD" is not shown as "Csd".
+    const display = new Map();
     PART1.roles.forEach(role => {
         // "CSD / ICSD" is one row describing two actors.
         String(role.name).split('/').forEach(part => {
-            const clean = part.trim().toLowerCase();
-            if (clean.length > 2) names.add(clean);
+            const written = part.trim();
+            const clean = written.toLowerCase();
+            if (clean.length > 2) { names.add(clean); display.set(clean, written); }
         });
     });
     // Longest first, so "transferor's bank" wins over "transferor".
     PART1.__actorVocab = [...names].sort((a, b) => b.length - a.length);
+    PART1.__actorDisplay = display;
     return PART1.__actorVocab;
+}
+
+// The name as the document writes it; title case only as a last resort.
+function part1ActorDisplay(name) {
+    part1ActorVocabulary();
+    const raw = String(name || '').trim();
+    if (!raw) return '';
+    const written = PART1.__actorDisplay ? PART1.__actorDisplay.get(raw.toLowerCase()) : '';
+    if (written) return written;
+    // Table cells arrive already capitalised by the document: leave them intact
+    // instead of re-casing "(all levels)" or "FIToFI".
+    return /[A-Z]/.test(raw) ? raw : part1TitleCase(raw);
 }
 
 function part1RoleDefinition(name) {
@@ -2055,95 +2232,272 @@ function part1RoleDefinition(name) {
     return role ? role.definition : '';
 }
 
+// Joining words stay in lower case, so a compound name reads as the document
+// writes it: "Clearing and Settlement Agent", not "Clearing And Settlement Agent".
+const P1_TITLE_CONNECTORS = new Set(['and', 'or', 'of', 'the', 'to', 'for', 'a', 'an', 'in', 'on']);
+
 function part1TitleCase(value) {
-    return String(value || '').replace(/\b([a-z])/g, (match, letter) => letter.toUpperCase());
+    // Only the first letter is touched, so acronyms already in the document
+    // ("CSD", "FIToFI") keep their own casing.
+    return String(value || '').replace(/\S+/g, (word, offset) =>
+        offset > 0 && P1_TITLE_CONNECTORS.has(word.toLowerCase())
+            ? word.toLowerCase()
+            : word.replace(/^[a-z]/, letter => letter.toUpperCase()));
 }
 
-// Every actor mentioned in a sentence, with the position where it occurs.
+// Every actor mentioned in a sentence, with the position where it occurs. Two
+// sources are merged: the vocabulary of the document (roles tables) and the noun
+// phrases of the sentence itself. The longest name wins when they overlap, so
+// "clearing and settlement agent" is never reduced to "agent".
 function part1FindActors(text) {
     const lower = String(text || '').toLowerCase();
     const found = [];
+    const add = (name, index) => {
+        const clash = found.findIndex(item =>
+            index < item.index + item.name.length && item.index < index + name.length);
+        if (clash === -1) { found.push({ name, index }); return; }
+        if (name.length > found[clash].name.length) found[clash] = { name, index };
+    };
     part1ActorVocabulary().forEach(actor => {
         let from = 0;
         for (;;) {
             const index = lower.indexOf(actor, from);
             if (index === -1) break;
-            // Whole-word only, so "investor" does not match inside "institutional investor".
+            // Whole-word only, so "investor" does not match inside "reinvestor".
             const before = index === 0 ? ' ' : lower[index - 1];
             const after = lower[index + actor.length] || ' ';
-            if (!/[a-z]/.test(before) && !/[a-z]/.test(after)) {
-                const covered = found.some(item => index >= item.index && index < item.index + item.name.length);
-                if (!covered) found.push({ name: actor, index });
-            }
+            if (!/[a-z]/.test(before) && !/[a-z]/.test(after)) add(actor, index);
             from = index + actor.length;
         }
     });
+    part1ActorPhrases(text).forEach(item => add(item.name, item.index));
     return found.sort((left, right) => left.index - right.index);
 }
 
-// chapter 6: the Step / Description / Initiator table.
+// The actor introduced by a preposition ("to the account servicer", "by the
+// Debtor Agent"): it has to sit immediately after it, which is what tells a
+// receiver apart from an actor merely mentioned later in the sentence.
+function part1ActorAfterWord(text, actors, word, fromIndex) {
+    const regex = new RegExp(`\\b${word}\\s+(?:the\\s+|its\\s+|their\\s+|his\\s+|her\\s+|a\\s+|an\\s+)?`, 'gi');
+    regex.lastIndex = Math.max(fromIndex, 0);
+    let match;
+    while ((match = regex.exec(text))) {
+        const at = match.index + match[0].length;
+        const actor = actors.find(item => item.index === at);
+        if (actor) return actor;
+    }
+    return null;
+}
+
+// chapter 6: the Step / Description / Initiator table. The header names vary
+// between MDRs, so each column is matched by meaning instead of by exact label.
+const P1_STEP_COLUMNS = {
+    step: /^(?:step|steps|seq|sequence|no\.?|n[.\u00ba\u00b0]?|#|paso)\b|^step$/,
+    initiator: /initiator|initiating|sender|sent by|from|actor|role|participant/,
+    receiver: /receiver|recipient|receiving|^to\b|target|addressee|responder/,
+    message: /message|mensaje/,
+    description: /description|descripcion|purpose|detail|action|activity/
+};
+
+function part1StepColumns(columns) {
+    const find = regex => columns.findIndex(name => regex.test(name));
+    return {
+        step: find(P1_STEP_COLUMNS.step),
+        initiator: find(P1_STEP_COLUMNS.initiator),
+        receiver: find(P1_STEP_COLUMNS.receiver),
+        message: find(P1_STEP_COLUMNS.message),
+        description: find(P1_STEP_COLUMNS.description)
+    };
+}
+
+// "Executing Party / Registering Party" names two actors for one step.
+function part1SplitActorCell(value) {
+    return String(value || '').split(/\s*(?:\/|,|;|\band\b|&)\s*/i)
+        .map(part => part.trim()).filter(Boolean);
+}
+
 function part1FlowFromTable(section) {
     for (const block of section.blocks) {
         if (block.kind !== 'table' || !block.rows.length) continue;
         const columns = block.rows[0].cells.map(cell => cell.text.trim().toLowerCase());
-        const stepIndex = columns.indexOf('step');
-        const initiatorIndex = columns.indexOf('initiator');
-        if (stepIndex === -1 || initiatorIndex === -1) continue;
-        const descriptionIndex = columns.findIndex(name => /description/.test(name));
+        const at = part1StepColumns(columns);
+        if (at.step === -1) continue;
+        if (at.initiator === -1 && at.receiver === -1 && at.message === -1) continue;
+        const cell = (row, index) => (index === -1 ? '' : ((row.cells[index] || {}).text || '').trim());
         const steps = block.rows.slice(1).map((row, order) => {
-            const initiator = (row.cells[initiatorIndex] || {}).text || '';
-            return {
+            const initiators = part1SplitActorCell(cell(row, at.initiator));
+            const receivers = part1SplitActorCell(cell(row, at.receiver));
+            const step = {
                 number: order + 1,
-                title: (row.cells[stepIndex] || {}).text || '',
-                description: descriptionIndex === -1 ? '' : ((row.cells[descriptionIndex] || {}).text || ''),
-                // "Executing Party / Registering Party" names two actors for one step.
-                actors: initiator.split('/').map(part => part.trim()).filter(Boolean),
-                message: ''
+                title: cell(row, at.step),
+                description: cell(row, at.description),
+                actors: [...initiators, ...receivers],
+                message: cell(row, at.message)
             };
-        }).filter(step => step.title || step.description);
+            // The arrow is only drawn when the table really names both ends;
+            // otherwise the initiators are listed as they are.
+            if (initiators.length && receivers.length) {
+                step.from = part1ActorDisplay(initiators[0]);
+                step.to = part1ActorDisplay(receivers[0]);
+            }
+            return step;
+        }).filter(step => step.title || step.description || step.actors.length);
         if (steps.length) return { steps, source: 'table', table: block };
     }
     return null;
 }
 
 // chapter 7: prose of the form "A sends a MessageName message to B".
+// Words that precede "message" without naming one.
+const P1_NOT_A_MESSAGE = new Set([
+    'the', 'this', 'that', 'these', 'those', 'a', 'an', 'each', 'both', 'one', 'any',
+    'other', 'another', 'same', 'first', 'second', 'third', 'new', 'original', 'initial',
+    'final', 'previous', 'next', 'following', 'above', 'related', 'corresponding',
+    'single', 'only', 'valid', 'appropriate', 'relevant', 'business', 'iso', 'xml',
+    'incoming', 'outgoing', 'inbound', 'outbound', 'error', 'reject', 'sent', 'received'
+]);
+// "an AccountOpeningInstruction message", "message pacs.004": the name of the
+// message is what identifies an exchange as a step of the flow.
+const P1_MESSAGE_PATTERNS = [
+    /\b([A-Z][A-Za-z]{3,})\s+messages?\b/,
+    /\bmessages?\s+([A-Z][A-Za-z]{3,})\b/,
+    /\b([a-z]{4}\.\d{3}\.\d{3}\.\d{2})\b/
+];
+// Active and passive forms of "to send". Present participles are left out on
+// purpose: "the Forwarding Agent" and "the sending party" are actor names, not
+// verbs, and mistaking one for a verb breaks the sender/receiver split.
+const P1_SEND_VERB_RE = /\b(?:sends?|sent|forwards?|forwarded|transmits?|transmitted|submits?|submitted|issues?|issued|replies|responds?)\b/i;
+const P1_RECEIVE_VERB_RE = /\b(?:receives?|received)\b/i;
+
+// The verb that separates sender from receiver. A match inside an actor's own name
+// is skipped, and a verb with an actor in front of it wins over an earlier one.
+function part1FindVerb(text, actors, pattern) {
+    const scan = new RegExp(pattern.source, 'gi');
+    let first = null;
+    let match;
+    while ((match = scan.exec(text))) {
+        const inside = actors.some(actor =>
+            match.index >= actor.index && match.index < actor.index + actor.name.length);
+        if (inside) continue;
+        if (!first) first = match;
+        if (actors.some(actor => actor.index < match.index)) return match;
+    }
+    return first;
+}
+// A paragraph often describes several exchanges, one per sentence.
+const P1_SENTENCE_SPLIT_RE = /(?<=[.;])\s+(?=[A-Z(])/;
+
+function part1MessageIn(text) {
+    for (const pattern of P1_MESSAGE_PATTERNS) {
+        const match = text.match(pattern);
+        if (match && !P1_NOT_A_MESSAGE.has(match[1].toLowerCase())) {
+            return { name: match[1], index: match.index };
+        }
+    }
+    return null;
+}
+
+// One sentence -> at most one step. Returns null when the sentence does not
+// describe an exchange.
+function part1StepFromSentence(text) {
+    const message = part1MessageIn(text);
+    if (!message) return null;
+    const actors = part1FindActors(text);
+    if (!actors.length) return null;
+
+    const sendMatch = part1FindVerb(text, actors, P1_SEND_VERB_RE);
+    const receiveMatch = sendMatch ? null : part1FindVerb(text, actors, P1_RECEIVE_VERB_RE);
+    const verb = sendMatch || receiveMatch;
+    if (!verb) return null;
+    const verbIndex = verb.index;
+    const before = actors.filter(actor => actor.index < verbIndex);
+    const after = actors.filter(actor => actor.index > verbIndex);
+
+    let fromActor = null;
+    let toActor = null;
+    if (receiveMatch) {
+        // "B receives the X message from A" describes the same hop, reversed.
+        toActor = before.length ? before[before.length - 1] : null;
+        fromActor = part1ActorAfterWord(text, after, 'from', verbIndex);
+    } else {
+        // Sender: the actor closest before the verb, or the agent of the passive
+        // form ("is sent by the Debtor Agent").
+        fromActor = before.length ? before[before.length - 1]
+            : part1ActorAfterWord(text, after, 'by', verbIndex);
+        // Receiver: whoever the message is addressed to. Only if the sentence does
+        // not say it explicitly is the next actor after the message name used.
+        toActor = part1ActorAfterWord(text, after, 'to', verbIndex)
+            || part1ActorAfterWord(text, after, 'towards', verbIndex);
+        if (!toActor) {
+            const tail = actors.filter(actor => actor.index > message.index && actor !== fromActor);
+            toActor = tail.length ? tail[0] : null;
+        }
+    }
+    // A hop from an actor to itself is a parsing artefact, not a step.
+    if (fromActor && toActor && fromActor.name === toActor.name) toActor = null;
+    if (!fromActor && !toActor) return null;
+
+    const from = fromActor ? part1ActorDisplay(fromActor.name) : '';
+    const to = toActor ? part1ActorDisplay(toActor.name) : '';
+    return {
+        title: '',
+        description: text,
+        actors: [from, to].filter(Boolean),
+        message: message.name,
+        from,
+        to
+    };
+}
+
 function part1FlowFromProse(section) {
     const steps = [];
     section.blocks.forEach(block => {
-        if (block.kind !== 'text') return;
-        const text = block.text;
-        const messageMatch = text.match(/\b([A-Z][A-Za-z]{4,})\s+message\b/);
-        if (!messageMatch) return;
-        const sendMatch = text.match(/\b(?:sends?|send|sending)\b/i);
-        if (!sendMatch) return;
-
-        const actors = part1FindActors(text);
-        if (!actors.length) return;
-        const verbIndex = sendMatch.index;
-        const messageIndex = messageMatch.index;
-        // Sender: the actor closest before the verb. Receiver: the first actor
-        // after the message name, which is where "to <actor>" sits.
-        const before = actors.filter(actor => actor.index < verbIndex);
-        const after = actors.filter(actor => actor.index > messageIndex);
-        const from = before.length ? before[before.length - 1].name : '';
-        const to = after.length ? after[0].name : '';
-        if (!from) return;
-        steps.push({
-            number: steps.length + 1,
-            title: '',
-            description: text,
-            actors: [from, to].filter(Boolean).map(part1TitleCase),
-            message: messageMatch[1],
-            from: part1TitleCase(from),
-            to: to ? part1TitleCase(to) : ''
+        // Numbered lists carry the flow as often as plain paragraphs do.
+        if (block.kind !== 'text' && block.kind !== 'bullet') return;
+        String(block.text || '').split(P1_SENTENCE_SPLIT_RE).forEach(sentence => {
+            const step = part1StepFromSentence(sentence.trim());
+            if (!step) return;
+            step.number = steps.length + 1;
+            steps.push(step);
         });
     });
     return steps.length ? { steps, source: 'prose' } : null;
 }
 
+// A sentence such as "the account servicer may send a status report in response to
+// the instruction" names no receiver. When the whole flow only involves two
+// parties there is just one possible counterpart, so the hop is completed and
+// flagged as inferred instead of being left half drawn.
+function part1CompleteHops(flow) {
+    if (flow.source !== 'prose') return;
+    const named = new Set();
+    flow.steps.forEach(step => {
+        if (step.from) named.add(step.from);
+        if (step.to) named.add(step.to);
+    });
+    if (named.size !== 2) return;
+    const pair = [...named];
+    flow.steps.forEach(step => {
+        if (step.from && !step.to) {
+            step.to = pair.find(name => name !== step.from) || '';
+            step.inferredTo = Boolean(step.to);
+        } else if (step.to && !step.from) {
+            step.from = pair.find(name => name !== step.to) || '';
+            step.inferredFrom = Boolean(step.from);
+        }
+        step.actors = [step.from, step.to].filter(Boolean);
+    });
+}
+
 function part1BuildFlow(section) {
-    const flow = part1FlowFromTable(section) || part1FlowFromProse(section);
+    const table = part1FlowFromTable(section);
+    // The step table is authoritative when it is really a table of steps; a
+    // one-row table next to three sentences of prose is not.
+    const flow = table && table.steps.length > 1
+        ? table
+        : (part1FlowFromProse(section) || table);
     if (!flow) return null;
+    part1CompleteHops(flow);
     // Who takes part, and in which steps: this is the "what does each one do".
     const participants = new Map();
     flow.steps.forEach(step => {
@@ -2151,7 +2505,7 @@ function part1BuildFlow(section) {
             const key = actor.trim().toLowerCase();
             if (!key) return;
             if (!participants.has(key)) {
-                participants.set(key, { name: part1TitleCase(actor.trim()), steps: [], definition: part1RoleDefinition(actor) });
+                participants.set(key, { name: part1ActorDisplay(actor), steps: [], definition: part1RoleDefinition(actor) });
             }
             participants.get(key).steps.push(step.number);
         });
@@ -2163,11 +2517,17 @@ function part1BuildFlow(section) {
 function part1FlowHtml(flow) {
     if (!flow) return '';
     const stepsHtml = flow.steps.map(step => {
-        const route = flow.source === 'prose' && step.from
+        // When both ends of the hop are known the route is drawn as an arrow; a
+        // missing end is said out loud instead of leaving an empty tag.
+        const unknown = '<span class="p1-actor-tag is-unknown">sin indicar</span>';
+        const tag = (name, inferred) => `<span class="p1-actor-tag${inferred ? ' is-inferred' : ''}"${
+            inferred ? ' title="El documento no lo nombra en esta frase: se deduce del resto del flujo"' : ''
+        }>${escapeHtml(name)}${inferred ? ' <span aria-hidden="true">*</span>' : ''}</span>`;
+        const route = (step.from || step.to)
             ? `<span class="p1-step-route">
-                    <span class="p1-actor-tag">${escapeHtml(step.from)}</span>
+                    ${step.from ? tag(step.from, step.inferredFrom) : unknown}
                     <span class="p1-step-arrow" aria-hidden="true">&rarr;</span>
-                    ${step.to ? `<span class="p1-actor-tag">${escapeHtml(step.to)}</span>` : ''}
+                    ${step.to ? tag(step.to, step.inferredTo) : unknown}
                </span>`
             : `<span class="p1-step-route">${step.actors.map(actor =>
                     `<span class="p1-actor-tag">${escapeHtml(actor)}</span>`).join('')}</span>`;
@@ -2249,6 +2609,97 @@ function part1BlocksHtml(blocks) {
     return out.join('');
 }
 
+// ===== Message role =====
+// ISO 20022 names a MessageDefinition after its function: the term that closes the
+// name says whether the message asks, answers or reports. Neither part of the MDR
+// states it row by row, so the role is derived from that convention and always
+// carries the term it was based on in the tooltip, so the reader can check it.
+// Shared by both views: the MessageDefinition tables of Part 1 and the message
+// list and header of Part 2.
+const MDR_MESSAGE_ROLE_KINDS = {
+    request: { label: 'Petición', hint: 'Abre el intercambio: pide o instruye a la otra parte.' },
+    response: { label: 'Respuesta', hint: 'Contesta a un mensaje anterior.' },
+    // Deliberately vague: a report answers a request in some flows and is pushed
+    // periodically in others, and the name alone does not say which.
+    report: { label: 'Informe', hint: 'Transporta información: puede contestar a una petición o enviarse por su cuenta.' }
+};
+
+// Order matters: "StatusReport" answers, while "RequestForStatusReport" asks.
+const MDR_MESSAGE_ROLES = [
+    { term: 'RequestFor', match: /^requestfor/, kind: 'request' },
+    { term: 'Request', match: /request$/, kind: 'request' },
+    { term: 'Query', match: /quer(y|ies)$/, kind: 'request' },
+    { term: 'Instruction', match: /instruction$/, kind: 'request' },
+    { term: 'Order', match: /order$/, kind: 'request' },
+    { term: 'Initiation', match: /initiation$/, kind: 'request' },
+    { term: 'Amendment', match: /amendment$/, kind: 'request' },
+    { term: 'Cancellation', match: /cancellation$/, kind: 'request' },
+    { term: 'Return', match: /return$/, kind: 'request' },
+    { term: 'Reversal', match: /reversal$/, kind: 'request' },
+    { term: 'CreditTransfer', match: /credittransfer$/, kind: 'request' },
+    { term: 'DirectDebit', match: /directdebit$/, kind: 'request' },
+    { term: 'StatusReport', match: /statusreport$/, kind: 'response' },
+    { term: 'StatusAdvice', match: /statusadvice$/, kind: 'response' },
+    { term: 'Confirmation', match: /confirmation$/, kind: 'response' },
+    { term: 'Response', match: /response$/, kind: 'response' },
+    { term: 'Rejection', match: /rejection$/, kind: 'response' },
+    { term: 'Acknowledgement', match: /acknowledge?ment$/, kind: 'response' },
+    { term: 'Report', match: /report$/, kind: 'report' },
+    // "StatementOfHoldings", "StatementOfInvestmentFundTransactions": the term does
+    // not always close the name. Every asking and answering rule is checked first,
+    // so "SecuritiesStatementQuery" is still a request.
+    { term: 'Statement', match: /statement/, kind: 'report' },
+    { term: 'Notification', match: /notification$/, kind: 'report' },
+    { term: 'Advice', match: /advice$/, kind: 'report' }
+];
+
+// "SubscriptionOrder (setr.010) V08" and "CustomerCreditTransferInitiationV12",
+// which is how Part 2 names a message, both reduce to the functional name.
+function mdrMessageKey(name) {
+    return String(name || '')
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/[a-z]{4}\.\d{3}(?:\.\d+)*/gi, ' ')
+        // The version travels glued to the name in Part 2 ("...InitiationV12").
+        .replace(/v\d+(?:[._-]\S*)?\s*$/i, ' ')
+        .replace(/\bv\d+\b/gi, ' ')
+        .toLowerCase()
+        .replace(/[^a-z]/g, '')
+        // "SecuritiesRejectionMessage" is the rejection, the trailing noun adds nothing.
+        .replace(/messages?$/, '');
+}
+
+function mdrMessageRole(name) {
+    const key = mdrMessageKey(name);
+    if (key.length < 4) return null;
+    const rule = MDR_MESSAGE_ROLES.find(item => item.match.test(key));
+    if (!rule) return null;
+    const kind = MDR_MESSAGE_ROLE_KINDS[rule.kind];
+    return { kind: rule.kind, term: rule.term, label: kind.label, hint: kind.hint };
+}
+
+// The tag itself, empty when the name does not state the function of the message.
+function mdrMessageRoleTagHtml(name) {
+    const role = mdrMessageRole(name);
+    if (!role) return '';
+    const tip = `${role.hint} Deducido del término \u00ab${role.term}\u00bb con el que termina el nombre.`;
+    return `<span class="mdr-role-tag is-${role.kind}" title="${escapeHtml(tip)}">${escapeHtml(role.label)}</span>`;
+}
+
+// Header of the column that holds the name of the MessageDefinition, or -1.
+function part1MessageNameColumn(headerRow) {
+    if (!headerRow || !headerRow.cells) return -1;
+    return headerRow.cells.findIndex(cell =>
+        /^message\s*(?:definition|name)/.test(normalizeBlockSearch(cell.text)));
+}
+
+function part1MessageRoleCellHtml(name) {
+    // In a table the column cannot stay empty, or the rows stop lining up.
+    const tag = mdrMessageRoleTagHtml(name)
+        || '<span class="mdr-role-tag is-unknown"'
+            + ' title="El nombre de este mensaje no indica por sí mismo si pide, responde o informa">&mdash;</span>';
+    return `<td class="is-role">${tag}</td>`;
+}
+
 function part1TableHtml(block) {
     const rows = block.rows || [];
     if (!rows.length) return '';
@@ -2256,12 +2707,27 @@ function part1TableHtml(block) {
     const looksHeader = rows[0].header || rows[0].cells.every(cell => cell.text.length < 40);
     const headerRow = looksHeader ? rows[0] : null;
     const bodyRows = headerRow ? rows.slice(1) : rows;
+    // Only a table that lists MessageDefinitions gets the extra column.
+    const nameAt = part1MessageNameColumn(headerRow);
+    const roleHead = '<th class="p1-role-col"'
+        + ' title="Columna añadida por el navegador: deduce del nombre del mensaje, según la convención ISO 20022, si pide, responde o informa">'
+        + 'Rol <span class="p1-role-col-mark" aria-hidden="true">?</span></th>';
+
     const head = headerRow
-        ? `<thead><tr>${headerRow.cells.map(cell => `<th>${part1TextHtml(cell.text)}</th>`).join('')}</tr></thead>`
+        ? `<thead><tr>${headerRow.cells.map((cell, index) => {
+            const th = `<th>${part1TextHtml(cell.text)}</th>`;
+            return index === nameAt ? `${th}${roleHead}` : th;
+        }).join('')}</tr></thead>`
         : '';
-    const body = bodyRows.map(row =>
-        `<tr>${row.cells.map(cell =>
-            `<td class="${cell.isXml ? 'is-xml' : ''}">${part1TextHtml(cell.text)}</td>`).join('')}</tr>`).join('');
+    const body = bodyRows.map(row => {
+        const cells = row.cells.map((cell, index) => {
+            const td = `<td class="${cell.isXml ? 'is-xml' : ''}">${part1TextHtml(cell.text)}</td>`;
+            return index === nameAt ? `${td}${part1MessageRoleCellHtml(cell.text)}` : td;
+        }).join('');
+        // A row shorter than the header (merged cells) still needs the column.
+        const padding = nameAt >= 0 && row.cells.length <= nameAt ? '<td class="is-role"></td>' : '';
+        return `<tr>${cells}${padding}</tr>`;
+    }).join('');
     return `<div class="p1-table-wrap"><table class="p1-table">${head}<tbody>${body}</tbody></table></div>`;
 }
 
@@ -2490,6 +2956,63 @@ function filterPart1Tree(query) {
     updatePart1TreeStatus(terms.length ? visible : undefined);
 }
 
+// ===== Concept notes =====
+// A few headings of chapter 3 name a category of the standard instead of
+// describing business: the MDR lists which messages belong to the group but never
+// says what the group itself means. These notes explain the category next to the
+// section, and are matched by title so they work in any MDR (the numbering moves
+// between domains: "Instruction Messages" is 3.3.1 in Payments and the same
+// chapter holds "Related Messages" as 3.3.2 or 3.3.3 elsewhere).
+const P1_CONCEPT_NOTES = [
+    {
+        match: /\binstruction messages?\b/,
+        title: 'Qué son los mensajes de instrucción',
+        short: 'Los mensajes que llevan la orden y ponen en marcha el proceso.',
+        lead: 'Un mensaje de instrucción es el que lleva la orden: lo envía la parte que inicia el proceso para que la otra ejecute algo (abrir una cuenta, pagar, transferir, devolver un importe). Es el punto de partida del flujo y el motivo por el que existe este MDR.',
+        points: [
+            '<strong>Marcan el sentido del intercambio:</strong> van de la parte que instruye a la que ejecuta. Quien los recibe normalmente no contesta con otra instrucción, sino con un estado, una confirmación o un rechazo.',
+            '<strong>Están en el alcance del documento:</strong> la Parte 1 explica cuándo se usan y con qué actores; la Parte 2 define su estructura campo a campo.',
+            '<strong>La tabla del apartado es la lista oficial del grupo:</strong> cada MessageDefinition con su identificador ISO (por ejemplo <code>pacs.008</code> o <code>acmt.001</code>), que es el que después buscas en la Parte 2.',
+            '<strong>La columna «Rol» la añade el navegador:</strong> marca si el mensaje es una <em>petición</em> (pide o instruye), una <em>respuesta</em> (contesta a uno anterior) o un <em>informe</em> (informa sin petición previa). Se deduce del término con el que termina el nombre, según la convención de nombres ISO 20022; pasa el cursor por la etiqueta para ver en qué término se basó.'
+        ]
+    },
+    {
+        match: /\brelated messages?\b/,
+        title: 'Qué son los mensajes relacionados',
+        short: 'Mensajes de otros MDR que estos flujos usan, pero que aquí no se definen.',
+        lead: 'Los mensajes relacionados no se definen en este documento. Son otros mensajes ISO 20022 que aparecen en estos flujos porque el negocio los necesita, pero cuya definición vive en otro MDR, normalmente de otro dominio o catálogo.',
+        points: [
+            '<strong>Aquí solo está la referencia:</strong> el MDR los cita con su identificador ISO para que el flujo se entienda completo, sin describir sus campos.',
+            '<strong>Para su estructura hay que ir a su propio MDR:</strong> el identificador (por ejemplo <code>semt.021</code>) es la pista para localizarlo.',
+            '<strong>Son un aviso de dependencias:</strong> implementar los mensajes de este documento puede obligarte a soportar también alguno de estos.'
+        ]
+    }
+];
+
+function part1ConceptNote(section) {
+    if (!section || !section.title) return null;
+    const title = normalizeBlockSearch(section.title);
+    return P1_CONCEPT_NOTES.find(note => note.match.test(title)) || null;
+}
+
+function part1ConceptNoteHtml(section) {
+    const note = part1ConceptNote(section);
+    if (!note) return '';
+    // The prose is authored here, already in Spanish, so it deliberately avoids the
+    // classes that the translator picks up.
+    return `<aside class="p1-concept">
+        <div class="p1-concept-head">
+            <span class="p1-concept-icon" aria-hidden="true">?</span>
+            <div>
+                <strong>${escapeHtml(note.title)}</strong>
+                <small>Explicación del navegador &middot; no forma parte del texto del MDR</small>
+            </div>
+        </div>
+        <p class="p1-concept-lead">${note.lead}</p>
+        <ul class="p1-concept-points">${note.points.map(point => `<li>${point}</li>`).join('')}</ul>
+    </aside>`;
+}
+
 function openPart1Section(sectionId) {
     const section = part1SectionById(sectionId);
     if (!section) return;
@@ -2515,9 +3038,15 @@ function openPart1Section(sectionId) {
 
     const childrenHtml = section.children && section.children.length
         ? `<div class="section-title">En esta sección <span class="badge">${section.children.length}</span></div>
-           <div class="p1-roles">${section.children.map(child => `<div class="p1-role" style="cursor:pointer" onclick="openPart1Section('${child.id}')">
+           <div class="p1-roles">${section.children.map(child => {
+                // A category heading says nothing by itself, so the one-line gloss
+                // travels with it in the parent's list too.
+                const note = part1ConceptNote(child);
+                return `<div class="p1-role" style="cursor:pointer" onclick="openPart1Section('${child.id}')">
                 <div class="p1-role-name">${escapeHtml(child.number ? `${child.number}. ` : '')}${escapeHtml(child.title)}</div>
-           </div>`).join('')}</div>`
+                ${note ? `<div class="p1-concept-hint">${escapeHtml(note.short)}</div>` : ''}
+           </div>`;
+           }).join('')}</div>`
         : '';
 
     // The flow explanation goes first; the block it was derived from is then
@@ -2547,6 +3076,7 @@ function openPart1Section(sectionId) {
             <div class="p1-progress-track"><div class="p1-progress-bar" style="width:${percent}%"></div></div>
             <span class="p1-progress-text">Paso ${position + 1} de ${readable.length}</span>
         </div>` : ''}
+        ${part1ConceptNoteHtml(section)}
         ${part1FlowHtml(flow)}
         ${bodyHtml}
         ${sourceTableHtml}
@@ -4064,7 +4594,8 @@ const TRANSLATABLE_SELECTORS = [
     '.p1-caption',
     '.p1-bullets li',
     '.p1-role-def',
-    '.p1-table tbody td:not(.is-xml)',
+    // .is-role holds a tag written by the navigator, already in Spanish.
+    '.p1-table tbody td:not(.is-xml):not(.is-role)',
     '.ref-constraint-text',
     '.constraint-rule-text',
     '.constraint-summary',
@@ -5145,7 +5676,9 @@ function renderMessageList(filter) {
         }
         const div = document.createElement('div');
         div.className = 'msg-item' + (MDR.currentMessage === id ? ' active' : '');
-        div.innerHTML = `<span class="msg-id">${id}</span><span class="msg-name">${msg.name}</span>`;
+        // Whether the message asks, answers or reports, read from its own name.
+        div.innerHTML = `<span class="msg-item-top"><span class="msg-id">${id}</span>${mdrMessageRoleTagHtml(msg.name)}</span>`
+            + `<span class="msg-name">${msg.name}</span>`;
         div.onclick = () => navigateToMessage(id);
         $messageList.appendChild(div);
     });
@@ -5198,7 +5731,7 @@ function navigateToMessage(msgId) {
             <div>
                 <span class="p1-eyebrow">MDR Parte 2 &middot; El qué</span>
                 <h2>${msg.name}</h2>
-                <p class="msg-id-label">${msgId}</p>
+                <p class="msg-id-label">${msgId}${mdrMessageRoleTagHtml(msg.name)}</p>
             </div>
             <div class="msg-header-actions">
                 <button type="button" class="btn-schema" onclick="openMessageSchema('${msgId}')" title="Visualiza el esquema JSON completo del mensaje, con todos sus anidamientos, tipos de dato, presencia y grupos SelectOneOf">
@@ -6346,7 +6879,12 @@ const SchemaViewer = {
     showMeta: true,
     maxDepth: 4,
     lastFocus: null,
-    truncated: false
+    truncated: false,
+    // Search: matches are highlighted in place. Collapsing the tree down to the
+    // matching branches is opt-in, so context is never lost by accident.
+    onlyMatches: false,
+    matches: [],
+    matchIndex: -1
 };
 
 // resolveStructureDefinition() scans the whole block catalogue, so its answer is
@@ -7055,43 +7593,115 @@ function schemaCollapseAll() {
     schemaUpdateStatus();
 }
 
-// ===== Filtering =====
+// ===== Search =====
+// Searching marks and highlights the matches but leaves the tree intact: a field
+// only makes sense next to its parent block, so hiding the rest would remove the
+// context that explains the hit. Reducing the tree to the matching branches is
+// available as an explicit toggle ("Solo coincidencias").
 
-function schemaApplyFilter() {
-    const pane = document.getElementById('schemaTreePane');
+function schemaSearchTerms() {
     const input = document.getElementById('schemaSearch');
-    if (!pane) return;
-    const terms = normalizeBlockSearch(input ? input.value : '').split(/\s+/).filter(Boolean);
-    const elements = Array.from(pane.querySelectorAll('.sch-node'));
-    if (!terms.length) {
-        elements.forEach(element => element.classList.remove('sch-hidden'));
-        schemaClearHighlight(pane);
-        schemaUpdateStatus();
-        return;
-    }
-    const keep = new Set();
-    elements.forEach(element => {
-        const node = SchemaViewer.nodes.get(element.id);
-        if (!node) return;
-        const haystack = normalizeBlockSearch([
+    return normalizeBlockSearch(input ? input.value : '').split(/\s+/).filter(Boolean);
+}
+
+// Searchable text of a node, built once: the tree can hold thousands of nodes and
+// this runs on every keystroke.
+function schemaNodeHaystack(node) {
+    if (node.__haystack === undefined) {
+        node.__haystack = normalizeBlockSearch([
             node.name, node.tag, node.typeInfo && node.typeInfo.label,
             node.typeInfo && node.typeInfo.datatypeName, node.constraint, node.mult,
             node.required ? 'obligatorio' : 'opcional', node.isOr ? 'selectoneof or' : ''
         ].join(' '));
-        if (terms.every(term => haystack.includes(term))) {
-            let current = element;
-            while (current && current.classList.contains('sch-node')) {
-                if (keep.has(current)) break;
-                keep.add(current);
-                const parent = current.parentElement ? current.parentElement.closest('.sch-node') : null;
-                if (parent && !parent.classList.contains('is-open')) schemaSetNodeState(parent, true);
-                current = parent;
-            }
+    }
+    return node.__haystack;
+}
+
+function schemaApplyFilter() {
+    const pane = document.getElementById('schemaTreePane');
+    if (!pane) return;
+    const terms = schemaSearchTerms();
+    const elements = Array.from(pane.querySelectorAll('.sch-node'));
+    if (!terms.length) {
+        elements.forEach(element => element.classList.remove('sch-hidden', 'sch-match', 'sch-match-current'));
+        schemaClearHighlight(pane);
+        SchemaViewer.matches = [];
+        SchemaViewer.matchIndex = -1;
+        schemaUpdateMatchNav();
+        schemaUpdateStatus();
+        return;
+    }
+    // keep = the matches plus their ancestors, which is what "Solo coincidencias"
+    // leaves on screen. Ancestors are expanded either way so no match stays folded.
+    const matched = new Set();
+    const keep = new Set();
+    elements.forEach(element => {
+        const node = SchemaViewer.nodes.get(element.id);
+        if (!node) return;
+        const haystack = schemaNodeHaystack(node);
+        if (!terms.every(term => haystack.includes(term))) return;
+        matched.add(element);
+        let current = element;
+        while (current && current.classList.contains('sch-node')) {
+            if (keep.has(current)) break;
+            keep.add(current);
+            const parent = current.parentElement ? current.parentElement.closest('.sch-node') : null;
+            if (parent && !parent.classList.contains('is-open')) schemaSetNodeState(parent, true);
+            current = parent;
         }
     });
-    elements.forEach(element => element.classList.toggle('sch-hidden', !keep.has(element)));
-    schemaHighlight(pane, terms);
-    schemaUpdateStatus(keep.size);
+    elements.forEach(element => {
+        element.classList.toggle('sch-match', matched.has(element));
+        element.classList.toggle('sch-hidden', SchemaViewer.onlyMatches && !keep.has(element));
+    });
+    // Document order, so the ‹ › navigation follows the tree top to bottom.
+    SchemaViewer.matches = elements.filter(element => matched.has(element));
+    schemaHighlight(pane, terms, SchemaViewer.matches);
+    if (!SchemaViewer.matches.length) SchemaViewer.matchIndex = -1;
+    else if (SchemaViewer.matchIndex < 0 || SchemaViewer.matchIndex >= SchemaViewer.matches.length) SchemaViewer.matchIndex = 0;
+    schemaMarkCurrentMatch();
+    schemaUpdateMatchNav();
+    schemaUpdateStatus();
+}
+
+function schemaMarkCurrentMatch() {
+    const list = SchemaViewer.matches || [];
+    list.forEach((element, index) => element.classList.toggle('sch-match-current', index === SchemaViewer.matchIndex));
+}
+
+function schemaUpdateMatchNav() {
+    const nav = document.getElementById('schemaFindNav');
+    const count = document.getElementById('schemaMatchCount');
+    const total = (SchemaViewer.matches || []).length;
+    if (nav) nav.hidden = !schemaSearchTerms().length;
+    if (count) count.textContent = total ? `${SchemaViewer.matchIndex + 1}/${total}` : '0/0';
+    const buttons = nav ? nav.querySelectorAll('.btn-sch-nav') : [];
+    buttons.forEach(button => { button.disabled = total < 2; });
+}
+
+// Moves the viewport to the next/previous match without touching visibility.
+function schemaGotoMatch(step) {
+    const list = SchemaViewer.matches || [];
+    if (!list.length) return;
+    const size = list.length;
+    SchemaViewer.matchIndex = ((SchemaViewer.matchIndex + step) % size + size) % size;
+    schemaScrollToCurrentMatch();
+}
+
+function schemaScrollToCurrentMatch() {
+    schemaMarkCurrentMatch();
+    schemaUpdateMatchNav();
+    const current = (SchemaViewer.matches || [])[SchemaViewer.matchIndex];
+    if (!current) return;
+    const row = current.querySelector('.sch-row, .sch-open') || current;
+    if (row.scrollIntoView) row.scrollIntoView({ block: 'center', inline: 'nearest' });
+}
+
+function schemaToggleOnlyMatches() {
+    SchemaViewer.onlyMatches = !SchemaViewer.onlyMatches;
+    const button = document.getElementById('schemaOnlyMatchBtn');
+    if (button) button.classList.toggle('active', SchemaViewer.onlyMatches);
+    schemaApplyFilter();
 }
 
 // ===== Search highlighting =====
@@ -7107,15 +7717,21 @@ function schemaClearHighlight(root) {
     });
 }
 
-function schemaHighlight(root, terms) {
+function schemaHighlight(root, terms, nodes) {
     if (!root) return;
     schemaClearHighlight(root);
     if (!terms || !terms.length) return;
     // Longest first, so "obligatorio" wins over "o" when both are typed.
     const ordered = terms.slice().sort((a, b) => b.length - a.length);
+    // Only the rows counted as matches are marked, so what is highlighted and what
+    // the counter reports are always the same thing.
+    const scope = nodes || root.querySelectorAll('.sch-node');
 
-    root.querySelectorAll('.sch-node:not(.sch-hidden)').forEach(nodeElement => {
+    scope.forEach(nodeElement => {
         nodeElement.querySelectorAll(SCHEMA_HIGHLIGHT_TARGETS).forEach(target => {
+            // A nested node is reached from its parent too; stashing twice would
+            // save already marked HTML and leave <mark> behind when clearing.
+            if (target.dataset.hlOrig !== undefined) return;
             const text = target.textContent;
             const normalized = normalizeBlockSearch(text);
             if (!ordered.some(term => normalized.includes(term))) return;
@@ -7157,8 +7773,16 @@ function schemaHighlight(root, terms) {
 
 function schemaSearchChanged() {
     const input = document.getElementById('schemaSearch');
-    if (input && input.value.trim()) schemaExpandAll();
-    else schemaApplyFilter();
+    const hasQuery = !!(input && input.value.trim());
+    // Expanding first materialises the deeper nodes, so a match cannot be missed
+    // just because its branch had never been opened.
+    if (hasQuery) {
+        SchemaViewer.matchIndex = 0;
+        schemaExpandAll();
+        schemaScrollToCurrentMatch();
+    } else {
+        schemaApplyFilter();
+    }
 }
 
 // ===== Toolbar =====
@@ -7200,7 +7824,7 @@ function schemaToggleMeta() {
     if (button) button.classList.toggle('active', SchemaViewer.showMeta);
 }
 
-function schemaUpdateStatus(visible) {
+function schemaUpdateStatus() {
     const status = document.getElementById('schemaStatus');
     if (!status) return;
     const pane = document.getElementById('schemaTreePane');
@@ -7208,7 +7832,13 @@ function schemaUpdateStatus(visible) {
     const total = pane ? Math.max(pane.querySelectorAll('.sch-node').length - 1, 0) : 0;
     const openCount = pane ? pane.querySelectorAll('.sch-node.is-open').length : 0;
     const parts = [`${total} campos generados`];
-    if (visible !== undefined) parts.push(`${Math.max(visible - 1, 0)} coinciden`);
+    // The match count is read from the state, so any caller reporting the status
+    // keeps it instead of blanking it out.
+    if (schemaSearchTerms().length) {
+        const matches = (SchemaViewer.matches || []).length;
+        parts.push(matches ? `${matches} coinciden` : 'sin coincidencias');
+        if (SchemaViewer.onlyMatches) parts.push('solo coincidencias');
+    }
     parts.push(`${openCount} nodos abiertos`);
     parts.push(`profundidad ${SchemaViewer.maxDepth === 25 ? 'completa' : SchemaViewer.maxDepth}`);
     if (SchemaViewer.truncated) parts.push('expansión limitada por tamaño');
@@ -7222,6 +7852,8 @@ function schemaResetSession(msgId) {
     SchemaViewer.nodes = new Map();
     SchemaViewer.nextId = 1;
     SchemaViewer.msgId = msgId;
+    SchemaViewer.matches = [];
+    SchemaViewer.matchIndex = -1;
     schemaHideTip();
 }
 
@@ -7304,6 +7936,13 @@ document.getElementById('schemaOverlay').addEventListener('click', event => {
 });
 
 document.getElementById('schemaSearch').addEventListener('input', schemaSearchChanged);
+
+// Enter walks the matches like a browser find bar; the tree itself stays whole.
+document.getElementById('schemaSearch').addEventListener('keydown', event => {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    schemaGotoMatch(event.shiftKey ? -1 : 1);
+});
 
 // ===== Confirmation dialog wiring =====
 document.getElementById('confirmAccept').addEventListener('click', () => closeConfirm(true));
