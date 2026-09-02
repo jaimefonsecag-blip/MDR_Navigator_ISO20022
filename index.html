@@ -142,7 +142,7 @@ body {
 
 /* Content re-renders on every navigation, so the panel animates as a unit and
    its first sections cascade in. */
-#contentPanel > * { animation:fadeUp 0.42s var(--ease-out) both; }
+#contentPanel > *, #part1Panel > * { animation:fadeUp 0.42s var(--ease-out) both; }
 #contentPanel > *:nth-child(1) { animation-delay:0.02s; }
 #contentPanel > *:nth-child(2) { animation-delay:0.07s; }
 #contentPanel > *:nth-child(3) { animation-delay:0.12s; }
@@ -320,6 +320,43 @@ body {
    at the top without a negative margin (which broke sticky and let the content
    scroll underneath it). */
 #mainContent { overflow-y:auto; padding:0 2rem 1.5rem; }
+
+/* ===== Combined workspace =====
+   With both parts loaded there is nothing to switch between: the business half
+   and the technical half share the screen and each pane scrolls on its own. */
+#mainContent.is-split { overflow:hidden; display:flex; flex-direction:column; padding-bottom:0; }
+#mainContent.is-split #workspace { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 1fr; margin:0 -0.9rem; }
+.ws-pane { display:flex; flex-direction:column; min-width:0; min-height:0; }
+#mainContent.is-split .ws-pane { padding:0 0.9rem; }
+#mainContent.is-split .ws-pane + .ws-pane { border-left:1px solid var(--border); }
+#mainContent.is-split .ws-pane-body { flex:1 1 auto; min-height:0; overflow-y:auto; padding-bottom:2rem; }
+.ws-pane-head {
+  display:flex; align-items:center; gap:0.6rem; flex:0 0 auto;
+  padding:0.1rem 0 0.55rem; margin-bottom:0.9rem; border-bottom:1px solid var(--border);
+}
+#workspace:not(.is-split) .ws-pane-head { display:none; }
+.ws-pane-tag { display:inline-flex; align-items:center; gap:0.35rem; flex:0 0 auto; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); white-space:nowrap; }
+.ws-pane-num { display:inline-grid; place-items:center; width:1.2rem; height:1.2rem; border-radius:50%; color:#FFFFFF; font-size:0.66rem; font-weight:800; }
+.ws-pane-num.is-biz { background:#2563EB; }
+.ws-pane-num.is-tech { background:var(--brand-purple-deep); }
+.ws-crumb { flex:1 1 auto; min-width:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ws-crumb .crumb-current { font-size:0.75rem; }
+.ws-focus { flex:0 0 auto; padding:0.1rem 0.4rem; font:inherit; font-size:0.8rem; color:var(--text-dim); background:transparent; border:1px solid var(--border); border-radius:6px; cursor:pointer; }
+.ws-focus:hover { color:var(--accent); border-color:var(--accent); }
+/* One half at full width when a structure needs the room; the other comes back
+   with the same button. */
+#mainContent.is-split #workspace.focus-1, #mainContent.is-split #workspace.focus-2 { grid-template-columns:1fr; }
+#workspace.focus-1 #techPane, #workspace.focus-2 #bizPane { display:none; }
+#workspace.focus-1 .ws-pane + .ws-pane, #workspace.focus-2 .ws-pane + .ws-pane { border-left:0; }
+/* Not enough width for two columns: the halves stack, still in the same screen. */
+@media (max-width:1180px) {
+  #mainContent.is-split { overflow-y:auto; display:block; padding-bottom:1.5rem; }
+  #mainContent.is-split #workspace { display:block; margin:0; }
+  #mainContent.is-split .ws-pane { padding:0; }
+  #mainContent.is-split .ws-pane-body { overflow:visible; padding-bottom:0; }
+  #mainContent.is-split .ws-pane + .ws-pane { border-left:0; border-top:1px solid var(--border); margin-top:1.6rem; padding-top:0.6rem; }
+  .ws-pane-head { position:sticky; top:3.4rem; z-index:20; background:var(--bg-primary); }
+}
 /* Sticky command bar. Only the side margins are negative, so the frosted
    background bleeds to the panel edges while the bar still reserves its own
    height in normal flow. */
@@ -874,6 +911,8 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 /* Overview cards on the Part 1 landing view */
 .p1-overview { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.7rem; margin-bottom:1.4rem; }
 .p1-stat { padding:0.85rem 0.9rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-md); text-align:center; }
+/* The count that only exists when both parts are loaded. */
+.p1-stat.is-linked { border-color:var(--brand-purple); cursor:help; }
 .p1-stat-value { display:block; font-size:1.4rem; font-weight:800; background:var(--accent-gradient); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .p1-stat-label { display:block; margin-top:0.15rem; font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px; font-weight:700; }
 
@@ -967,6 +1006,9 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
 .bc-panel { margin:0.3rem 0 1.3rem; background:var(--bg-secondary); border:1px solid var(--border); border-left:3px solid var(--brand-blue); border-radius:var(--radius-md); overflow:hidden; }
 .bc-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; width:100%; padding:0.7rem 0.9rem; font:inherit; text-align:left; cursor:pointer; background:linear-gradient(135deg, rgba(37,99,235,0.10), transparent); border:0; }
 .bc-head:hover { background:var(--bg-hover); }
+/* The shared chevron only rotated for the scope panel; both convergence panels
+   use the same control, so the state has to read the same. */
+.bc-head[aria-expanded="true"] .scope-usage-chevron { transform:rotate(90deg); }
 .bc-head-main { display:flex; align-items:center; gap:0.6rem; min-width:0; }
 .bc-head strong { display:block; font-size:0.88rem; color:var(--text-primary); }
 .bc-head small { display:block; margin-top:0.1rem; font-size:0.74rem; color:var(--text-secondary); }
@@ -988,6 +1030,24 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
 .bc-sections .bc-label { width:100%; margin-bottom:0.15rem; }
 .bc-chip { padding:0.25rem 0.6rem; font:inherit; font-size:0.76rem; color:var(--accent); background:var(--accent-dim); border:1px solid transparent; border-radius:99px; cursor:pointer; transition:border-color 0.16s var(--ease); }
 .bc-chip:hover { border-color:var(--accent); }
+
+/* ===== Technical structure inside the business view (the mirror image) ===== */
+.bc-panel.is-technical { border-left-color:var(--brand-purple); }
+.bc-panel.is-technical .bc-head { background:linear-gradient(135deg, rgba(124,58,237,0.12), transparent); }
+.bc-panel.is-technical .bc-badge { background:var(--brand-purple-deep); }
+.tb-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(255px, 1fr)); gap:0.7rem; }
+.tb-card { display:flex; flex-direction:column; gap:0.45rem; padding:0.7rem 0.8rem; background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius-md); transition:border-color 0.16s var(--ease), transform 0.16s var(--ease-out); }
+.tb-card:hover { border-color:var(--accent); transform:translateY(-1px); }
+.tb-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:0.5rem; }
+.tb-msg { flex:1 1 auto; min-width:0; padding:0; font:inherit; text-align:left; background:transparent; border:0; cursor:pointer; }
+.tb-msg-id { display:block; font-size:0.74rem; font-weight:700; color:var(--accent); font-family:'Cascadia Code','Consolas',monospace; }
+.tb-msg-name { display:block; font-size:0.85rem; font-weight:600; color:var(--text-primary); word-break:break-word; }
+.tb-msg:hover .tb-msg-name { text-decoration:underline; }
+.tb-def { margin:0; font-size:0.8rem; line-height:1.55; color:var(--text-secondary); }
+.tb-metrics { display:flex; gap:0.7rem; flex-wrap:wrap; font-size:0.72rem; color:var(--text-dim); }
+.tb-metrics strong { color:var(--text-primary); font-weight:700; }
+.tb-actions { display:flex; gap:0.35rem; flex-wrap:wrap; margin-top:auto; }
+.p1-outline-badge.is-tech { color:var(--brand-purple); font-weight:800; font-family:'Cascadia Code','Consolas',monospace; }
 .p1-outline-badge.is-flow { color:var(--accent); font-weight:700; }
 
 /* Hover card with the Spanish definition */
@@ -997,6 +1057,15 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
 .sch-tip-tag { color:var(--text-dim); font-family:'Cascadia Code','Consolas',monospace; font-size:0.74rem; }
 .sch-tip-meta { display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap; margin-bottom:0.45rem; }
 .sch-tip-meta .sch-tip-chip { color:var(--text-secondary); background:var(--bg-panel); border-radius:4px; padding:0.05rem 0.35rem; font-size:0.7rem; font-family:'Cascadia Code','Consolas',monospace; }
+/* Which reusable MessageComponent the structure points at. */
+.sch-tip-ref {
+  display:flex; align-items:baseline; gap:0.35rem; flex-wrap:wrap;
+  margin-bottom:0.45rem; padding:0.3rem 0.45rem;
+  background:var(--accent-dim); border-left:2px solid var(--accent); border-radius:4px;
+}
+.sch-tip-ref-label { width:100%; color:var(--text-dim); font-size:0.64rem; font-weight:800; letter-spacing:0.4px; text-transform:uppercase; }
+.sch-tip-ref-name { color:var(--accent); font-size:0.8rem; font-weight:700; font-family:'Cascadia Code','Consolas',monospace; }
+.sch-tip-ref-meta { color:var(--text-dim); font-size:0.7rem; }
 .sch-tip-def { color:var(--text-primary); font-size:0.82rem; line-height:1.45; }
 .sch-tip-def[data-state="pending"] { color:var(--text-dim); font-style:italic; }
 .sch-tip-def[data-state="empty"] { color:var(--text-dim); font-style:italic; }
@@ -1171,7 +1240,28 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
           <button id="themeBtn" class="btn-theme" onclick="toggleTheme()" title="Cambiar entre tema oscuro y claro">&#9728;&#65039; Tema claro</button>
         </div>
       </div>
-      <div id="contentPanel"></div>
+      <!-- One screen, two halves. With a single document only the second pane is
+           used, so nothing changes; with both, business and technical coexist. -->
+      <div id="workspace">
+        <div id="bizPane" class="ws-pane hidden">
+          <div class="ws-pane-head">
+            <span class="ws-pane-tag"><span class="ws-pane-num is-biz">1</span> Negocio &middot; Word</span>
+            <div id="bizCrumb" class="ws-crumb"></div>
+            <button type="button" class="ws-focus" onclick="toggleSplitFocus(1)"
+                    title="Ampliar o restaurar el panel de negocio" aria-label="Ampliar o restaurar el panel de negocio">&#8596;</button>
+          </div>
+          <div id="part1Panel" class="ws-pane-body"></div>
+        </div>
+        <div id="techPane" class="ws-pane">
+          <div class="ws-pane-head">
+            <span class="ws-pane-tag"><span class="ws-pane-num is-tech">2</span> Técnico &middot; PDF</span>
+            <div id="techCrumb" class="ws-crumb"></div>
+            <button type="button" class="ws-focus" onclick="toggleSplitFocus(2)"
+                    title="Ampliar o restaurar el panel técnico" aria-label="Ampliar o restaurar el panel técnico">&#8596;</button>
+          </div>
+          <div id="contentPanel" class="ws-pane-body"></div>
+        </div>
+      </div>
     </section>
     <!-- Right panel: detail/codeset -->
     <aside id="detailPanel" class="hidden">
@@ -1877,7 +1967,7 @@ const NavState = { part: 2, sectionId: '' };
 // explains why it exists. They are joined on two keys the documents share: the
 // message id (sese.007.001.09) and the long name without its version suffix
 // (TransferInConfirmation), which is how Part 1 prose refers to messages.
-const CONVERGENCE = { built: false, messages: [], orphanSections: 0 };
+const CONVERGENCE = { built: false, messages: [], bySection: null, linkedSections: 0 };
 
 function messageBaseName(name) {
     return String(name || '').replace(/V\d+$/, '');
@@ -1904,7 +1994,7 @@ function renderBusinessContextPanel(msgId) {
                 return `<li><strong>${escapeHtml(label)}</strong>${route ? ` <span class="bc-route">${route}</span>` : ''}</li>`;
             }).join('');
             return `<div class="bc-flow">
-                <button type="button" class="bc-flow-title" onclick="openPart1Section('${entry.section.id}');setNavPart(1)">
+                <button type="button" class="bc-flow-title" onclick="showBusinessSection('${entry.section.id}')">
                     ${escapeHtml(entry.section.number ? `${entry.section.number}. ` : '')}${escapeHtml(entry.section.title)} &rarr;
                 </button>
                 <ol class="bc-steps">${steps}</ol>
@@ -1914,12 +2004,12 @@ function renderBusinessContextPanel(msgId) {
         : '';
 
     const sectionChips = context.sections.slice(0, 12).map(section =>
-        `<button type="button" class="bc-chip" onclick="openPart1Section('${section.id}');setNavPart(1)">
+        `<button type="button" class="bc-chip" onclick="showBusinessSection('${section.id}')">
             ${escapeHtml(section.number ? `${section.number}. ` : '')}${escapeHtml(section.title)}
         </button>`).join('');
 
     return `<section class="bc-panel">
-        <button type="button" class="bc-head" aria-expanded="false" onclick="toggleBusinessContext(this)">
+        <button type="button" class="bc-head" aria-expanded="false" onclick="toggleConvergencePanel(this)">
             <span class="bc-head-main">
                 <span class="bc-badge">1</span>
                 <span>
@@ -1947,7 +2037,9 @@ function renderBusinessContextPanel(msgId) {
     </section>`;
 }
 
-function toggleBusinessContext(button) {
+// Shared by both halves of the convergence: the business panel inside Part 2 and
+// the technical panel inside Part 1.
+function toggleConvergencePanel(button) {
     const body = button.nextElementSibling;
     if (!body) return;
     const expanded = button.getAttribute('aria-expanded') === 'true';
@@ -2011,7 +2103,93 @@ function buildConvergence() {
     // Most useful first: messages with business context on top.
     CONVERGENCE.messages.sort((left, right) =>
         right.sections.length - left.sections.length || left.msgId.localeCompare(right.msgId));
+
+    // The same link read from the other side: which messages each Word section
+    // talks about. Built once so the outline and the section screen can ask for it
+    // on every render without walking the whole catalogue again.
+    CONVERGENCE.bySection = new Map();
+    CONVERGENCE.messages.forEach(item => {
+        item.sections.forEach(section => {
+            if (!CONVERGENCE.bySection.has(section.id)) CONVERGENCE.bySection.set(section.id, []);
+            CONVERGENCE.bySection.get(section.id).push(item);
+        });
+    });
+    CONVERGENCE.linkedSections = CONVERGENCE.bySection.size;
     CONVERGENCE.built = true;
+}
+
+// ===== Technical bridge =====
+// The other half of the convergence, rendered inside the Word: the messages of the
+// PDF that the section being read talks about, with their size, their role and a
+// way into their structure without leaving the page.
+
+function sectionIdsWithin(section, out) {
+    out.push(section.id);
+    (section.children || []).forEach(child => sectionIdsWithin(child, out));
+    return out;
+}
+
+// direct = only what this heading names; a parent that just groups subsections
+// borrows their links so a chapter is not left looking empty.
+function technicalBridgeFor(section) {
+    if (!CONVERGENCE.built || !section || !CONVERGENCE.bySection) return { messages: [], direct: 0 };
+    const direct = CONVERGENCE.bySection.get(section.id) || [];
+    const ids = sectionIdsWithin(section, []);
+    const seen = new Map();
+    ids.forEach(id => (CONVERGENCE.bySection.get(id) || []).forEach(item => {
+        if (!seen.has(item.msgId)) seen.set(item.msgId, item);
+    }));
+    const messages = [...seen.values()].sort((left, right) => left.msgId.localeCompare(right.msgId));
+    return { messages, direct: direct.length };
+}
+
+const TECH_BRIDGE_LIMIT = 8;
+
+function renderTechnicalBridgePanel(section) {
+    const { messages } = technicalBridgeFor(section);
+    if (!messages.length) return '';
+    const shown = messages.slice(0, TECH_BRIDGE_LIMIT);
+    const cards = shown.map(item => `<article class="tb-card">
+        <header class="tb-card-head">
+            <button type="button" class="tb-msg" onclick="jumpToPart2('${item.msgId}')"
+                    title="Abrir ${escapeHtml(item.msgId)} en la vista técnica">
+                <span class="tb-msg-id">${escapeHtml(item.msgId)}</span>
+                <span class="tb-msg-name">${escapeHtml(item.name)}</span>
+            </button>
+            ${mdrMessageRoleTagHtml(item.name)}
+        </header>
+        ${item.definition ? `<p class="tb-def scope-usage-text">${escapeHtml(item.definition)}</p>` : ''}
+        <div class="tb-metrics">
+            <span><strong>${item.blocks}</strong> building blocks</span>
+            <span><strong>${item.elements}</strong> campos</span>
+            <span><strong>${item.constraints}</strong> constraints</span>
+        </div>
+        <div class="tb-actions">
+            <button type="button" class="btn-tree-action" onclick="jumpToPart2('${item.msgId}')">Ver estructura &rarr;</button>
+            <button type="button" class="btn-tree-action" onclick="openMessageSchema('${item.msgId}')">{ } Esquema JSON</button>
+        </div>
+    </article>`).join('');
+
+    const rest = messages.length - shown.length;
+    return `<section class="bc-panel is-technical">
+        <button type="button" class="bc-head" aria-expanded="true" onclick="toggleConvergencePanel(this)">
+            <span class="bc-head-main">
+                <span class="bc-badge">2</span>
+                <span>
+                    <strong>Estructura técnica relacionada</strong>
+                    <small>Los mensajes de la Parte 2 que describe este apartado</small>
+                </span>
+            </span>
+            <span class="bc-head-meta">
+                <span class="p1-chip">${messages.length} mensaje${messages.length === 1 ? '' : 's'}</span>
+                <span class="tree-toggle scope-usage-chevron" aria-hidden="true">&#9656;</span>
+            </span>
+        </button>
+        <div class="bc-body">
+            <div class="tb-grid">${cards}</div>
+            ${rest > 0 ? `<span class="bc-more">+${rest} mensaje${rest === 1 ? '' : 's'} más en los apartados de este capítulo</span>` : ''}
+        </div>
+    </section>`;
 }
 
 // ISO 20022 message identifiers (camt.052.001.14), so the business flows can
@@ -2053,10 +2231,14 @@ function renderPart1Outline(filter) {
         // which is what makes the outline usable for analysis.
         const hasFlow = section.blocks.some(block => block.kind === 'table')
             || section.blocks.some(block => block.kind === 'text' && /\bsends?\b/i.test(block.text));
+        // With both parts loaded, the outline also says where the business text
+        // meets the technical structure.
+        const linked = CONVERGENCE.bySection ? (CONVERGENCE.bySection.get(section.id) || []).length : 0;
         return `<button type="button" class="p1-outline-item${active}" data-level="${section.level}"
                 data-section="${section.id}" onclick="openPart1Section('${section.id}')" title="${escapeHtml(section.title)}">
             ${section.number ? `<span class="p1-outline-num">${escapeHtml(section.number)}</span>` : ''}${escapeHtml(section.title)}
             ${hasFlow ? '<span class="p1-outline-badge is-flow" title="Incluye un flujo explicado paso a paso">&#8644;</span>' : ''}
+            ${linked ? `<span class="p1-outline-badge is-tech" title="${linked} mensaje(s) de la Parte 2 enlazados con este apartado">{ } ${linked}</span>` : ''}
             ${diagrams ? `<span class="p1-outline-badge" title="${diagrams} diagrama(s)">&#9635; ${diagrams}</span>` : ''}
         </button>`;
     }).join('');
@@ -2074,7 +2256,8 @@ function part1LinkMessages(safeHtml) {
 
 function jumpToPart2(msgId) {
     if (!MDR.messages[msgId]) return;
-    setNavPart(2);
+    // Split: the technical pane is already visible, so only its content changes.
+    if (!Workspace.split) setNavPart(2);
     navigateToMessage(msgId);
 }
 
@@ -2746,7 +2929,7 @@ function showPart1Overview() {
     NavState.sectionId = '';
     renderPart1Outline($searchInput ? $searchInput.value : '');
     const stats = PART1.stats || {};
-    $breadcrumb.innerHTML = '<span class="crumb-current">Parte 1 &middot; Contexto de negocio</span>';
+    partCrumb(1).innerHTML = '<span class="crumb-current">Parte 1 &middot; Contexto de negocio</span>';
 
     const roots = PART1.tree.filter(section => section.level === 1);
     const rolesHtml = PART1.roles.length
@@ -2757,7 +2940,7 @@ function showPart1Overview() {
            </div>`).join('')}</div>`
         : '';
 
-    $contentPanel.innerHTML = `
+    partPanel(1).innerHTML = `
         <div class="p1-head">
             <span class="p1-eyebrow">MDR Parte 1 &middot; El porqué</span>
             <h2>${escapeHtml(PART1.fileName.replace(/\.docx$/i, ''))}</h2>
@@ -2768,6 +2951,9 @@ function showPart1Overview() {
             <div class="p1-stat"><span class="p1-stat-value">${stats.diagrams || 0}</span><span class="p1-stat-label">Diagramas</span></div>
             <div class="p1-stat"><span class="p1-stat-value">${stats.roles || 0}</span><span class="p1-stat-label">Actores</span></div>
             <div class="p1-stat"><span class="p1-stat-value">${stats.samples || 0}</span><span class="p1-stat-label">Ejemplos XML</span></div>
+            ${CONVERGENCE.built ? `<div class="p1-stat is-linked" title="Mensajes de la Parte 2 que este documento explica. Cada apartado enlazado abre su estructura técnica.">
+                <span class="p1-stat-value">${CONVERGENCE.messages.filter(item => item.sections.length).length}</span>
+                <span class="p1-stat-label">Mensajes enlazados</span></div>` : ''}
         </div>
         <div class="section-title">Contenido del documento <span id="p1CountBadge" class="badge">${roots.length}</span></div>
         <div class="bb-search-panel">
@@ -2791,7 +2977,7 @@ function showPart1Overview() {
             if (event.key === 'Escape' && search.value) { search.value = ''; filterPart1Tree(''); }
         });
     }
-    applyTranslationToContainer($contentPanel);
+    applyTranslationToContainer(partPanel(1));
 }
 
 // ===== Part 1 content tree =====
@@ -3032,7 +3218,7 @@ function openPart1Section(sectionId) {
         if (candidate.level < level) { ancestors.unshift(candidate); level = candidate.level; }
     }
 
-    $breadcrumb.innerHTML = '<span class="crumb" onclick="showPart1Overview()">Parte 1</span>' +
+    partCrumb(1).innerHTML = '<span class="crumb" onclick="showPart1Overview()">Parte 1</span>' +
         ancestors.map(item => `<span class="crumb-sep">&rsaquo;</span><span class="crumb" onclick="openPart1Section('${item.id}')">${escapeHtml(item.title)}</span>`).join('') +
         `<span class="crumb-sep">&rsaquo;</span><span class="crumb-current">${escapeHtml(section.title)}</span>`;
 
@@ -3067,7 +3253,7 @@ function openPart1Section(sectionId) {
            </div>`
         : '';
 
-    $contentPanel.innerHTML = `
+    partPanel(1).innerHTML = `
         <div class="p1-head">
             <span class="p1-eyebrow">${escapeHtml(section.number || 'Parte 1')} &middot; nivel ${section.level}</span>
             <h2>${escapeHtml(section.title)}</h2>
@@ -3078,6 +3264,7 @@ function openPart1Section(sectionId) {
         </div>` : ''}
         ${part1ConceptNoteHtml(section)}
         ${part1FlowHtml(flow)}
+        ${renderTechnicalBridgePanel(section)}
         ${bodyHtml}
         ${sourceTableHtml}
         ${childrenHtml}
@@ -3095,10 +3282,13 @@ function openPart1Section(sectionId) {
     renderPart1Outline($searchInput ? $searchInput.value : '');
     const activeItem = document.querySelector(`.p1-outline-item[data-section="${sectionId}"]`);
     if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
-    const main = document.getElementById('mainContent');
-    if (main) main.scrollTop = 0;
+    // Split: each pane is its own scroller, so only the business half moves.
+    const scroller = Workspace.split ? partPanel(1) : document.getElementById('mainContent');
+    if (scroller) scroller.scrollTop = 0;
     // Spanish mode must reach the freshly rendered prose without waiting.
-    applyTranslationToContainer($contentPanel);
+    applyTranslationToContainer(partPanel(1));
+    // Bring the structure of the message this section describes into the other half.
+    syncMessageToSection(section);
 }
 
 // ===== Diagram viewer =====
@@ -3297,8 +3487,10 @@ function renderPairingPanel() {
     const linked = CONVERGENCE.messages.filter(item => item.sections.length).length;
     panel.className = 'pairing-panel is-ok';
     panel.innerHTML = `<div class="pairing-title">&#10003; Dominio verificado: ${escapeHtml(PAIRING.domain)}</div>
-        <p>Las dos partes describen el mismo dominio y quedaron <strong>enlazadas</strong>:
-        ${linked} de ${CONVERGENCE.messages.length} mensajes muestran su contexto de negocio dentro de la vista técnica.</p>
+        <p>Las dos partes describen el mismo dominio y quedaron <strong>enlazadas en los dos sentidos</strong>:
+        ${linked} de ${CONVERGENCE.messages.length} mensajes muestran su contexto de negocio dentro de la vista técnica,
+        y ${CONVERGENCE.linkedSections} apartado${CONVERGENCE.linkedSections === 1 ? '' : 's'} del Word abren la estructura
+        del mensaje sin salir de la página.</p>
         ${PAIRING.warnings.length
             ? `<ul class="pairing-warnings">${PAIRING.warnings.map(w => `<li>&#9888; ${escapeHtml(w)}</li>`).join('')}</ul>`
             : ''}`;
@@ -3463,6 +3655,23 @@ function processFunctionalityLine(msgId, line, lineEntry, pageNum) {
     return state.msgId === msgId && (state.mode === 'functionality' || state.mode === 'outline');
 }
 
+// The MDR states which MessageComponent a building block is with one of two
+// wordings, and both appear in the same document:
+//   "GroupHeader <GrpHdr> contains the following elements (see "GroupHeader114"
+//    on page 14 for details)"        -> the component is defined elsewhere
+//   "GroupHeader <GrpHdr> contains the following GroupHeader114 elements"
+//   "Party <Pty> contains one of the following Party50Choice elements"
+//                                    -> the component is defined right here
+// Only the first form carries a page to follow; the name is the component in
+// both, which is why reading only the first one hid most of the references.
+const MDR_CONTAINS_REFERENCE_RE = /\bcontains\b[\s\S]*?\bsee\s+"([^"]+)"\s+on page\s+(\d+)/i;
+// Most component names close with the ISO version number, but not all of them
+// ("QuantityAndAvailability", "PriceSourceFormatChoice"), so the digit cannot be
+// required. What identifies the name is sitting between "following" and
+// "elements": "contains the following elements" has nothing there and is the
+// other wording.
+const MDR_CONTAINS_INLINE_RE = /\bcontains\b(?:\s+one)?(?:\s+of)?\s+the\s+following\s+([A-Z][A-Za-z0-9]{2,})\s+elements\b/i;
+
 function parsePage(textContent, msgId, msgName, currentBB, pageNum) {
     const lineEntries = extractLineEntries(textContent);
     const lines = lineEntries.map(entry => entry.text);
@@ -3566,27 +3775,33 @@ function parsePage(textContent, msgId, msgName, currentBB, pageNum) {
         // this reference so missing/continued rows can be recovered exactly.
         // The sentence often wraps, so the previous fragment is joined in.
         const containsCandidate = pendingContainsLine ? `${pendingContainsLine} ${line}` : line;
-        const containsMatch = containsCandidate.match(/\bcontains\b[\s\S]*?\bsee\s+"([^"]+)"\s+on page\s+(\d+)/i);
-        if (!containsMatch && /\bcontains\b/i.test(containsCandidate) && /\bsee\b/i.test(containsCandidate) &&
-            !/on page\s+\d+/i.test(containsCandidate)) {
+        const containsMatch = containsCandidate.match(MDR_CONTAINS_REFERENCE_RE);
+        const inlineTypeMatch = containsMatch ? null : containsCandidate.match(MDR_CONTAINS_INLINE_RE);
+        if (!containsMatch && !inlineTypeMatch && /\bcontains\b/i.test(containsCandidate)
+            && /\bthe\s+following\b/i.test(containsCandidate) && !/on page\s+\d+/i.test(containsCandidate)) {
+            // The sentence wraps: keep the fragment and resolve it on the next line.
             pendingContainsLine = containsCandidate;
             continue;
         }
         pendingContainsLine = '';
-        if (containsMatch && currentBB) {
-            const typeName = containsMatch[1].trim();
-            const typePage = Number(containsMatch[2]);
-            currentBB.containedTypeName = typeName;
-            currentBB.containedTypePage = typePage;
-            const detail = getBlockDefinition(currentBB.definitionId);
-            if (detail) {
-                detail.containedTypeName = typeName;
-                detail.containedTypePage = typePage;
-            }
+        if ((containsMatch || inlineTypeMatch) && currentBB) {
+            const typeName = (containsMatch ? containsMatch[1] : inlineTypeMatch[1]).trim();
+            // Only the page-bearing form is a pointer to a definition elsewhere,
+            // which is what the canonical-elements merge follows. The name itself
+            // is the MessageComponent either way, and that is what gets shown.
+            const typePage = containsMatch ? Number(containsMatch[2]) : null;
+            const targets = [currentBB, getBlockDefinition(currentBB.definitionId)];
             if (currentBB.isLocal && currentBB.tag && msg.buildingBlocks[currentBB.tag]) {
-                msg.buildingBlocks[currentBB.tag].containedTypeName = typeName;
-                msg.buildingBlocks[currentBB.tag].containedTypePage = typePage;
+                targets.push(msg.buildingBlocks[currentBB.tag]);
             }
+            targets.filter(Boolean).forEach(target => {
+                target.componentTypeName = typeName;
+                target.componentTypePage = typePage;
+                if (typePage) {
+                    target.containedTypeName = typeName;
+                    target.containedTypePage = typePage;
+                }
+            });
             continue;
         }
 
@@ -3952,7 +4167,10 @@ function registerBlockDefinition(section, name, tag, page) {
         definition = {
             id, section, name, tag: tag || '', page,
             definition: '', elements: [], impactedBy: [],
-            containedTypeName: '', containedTypePage: null
+            containedTypeName: '', containedTypePage: null,
+            // The MessageComponent this definition is, whether or not the document
+            // points at another page for it.
+            componentTypeName: '', componentTypePage: null
         };
         MDR.blockDefinitions.push(definition);
     }
@@ -4322,6 +4540,8 @@ function ensureStructureBlock(msgId, element, definition) {
         mappedFromPage: definition.page,
         containedTypeName: definition.containedTypeName || '',
         containedTypePage: definition.containedTypePage || null,
+        componentTypeName: definition.componentTypeName || definition.containedTypeName || '',
+        componentTypePage: definition.componentTypePage || definition.containedTypePage || null,
         typeName: element.type || '',
         isTypedElement: true,
         sourceElement: element,
@@ -4475,6 +4695,8 @@ function resolveCodeSetMappings() {
                 codeSetName: element.codeSetName || '',
                 containedTypeName: (structure && structure.containedTypeName) || '',
                 containedTypePage: (structure && structure.containedTypePage) || null,
+                componentTypeName: (structure && (structure.componentTypeName || structure.containedTypeName)) || '',
+                componentTypePage: (structure && (structure.componentTypePage || structure.containedTypePage)) || null,
                 typeName,
                 isCodeSet,
                 isTypedElement: true,
@@ -4596,6 +4818,10 @@ const TRANSLATABLE_SELECTORS = [
     '.p1-role-def',
     // .is-role holds a tag written by the navigator, already in Spanish.
     '.p1-table tbody td:not(.is-xml):not(.is-role)',
+    // Flow steps, in the business view and in the panel that mirrors them inside
+    // the technical view. Only the label: the route holds actor names.
+    '.p1-step-title',
+    '.bc-steps li strong',
     '.ref-constraint-text',
     '.constraint-rule-text',
     '.constraint-summary',
@@ -4662,6 +4888,9 @@ const MDR_PHRASE_DICTIONARY = {
 // Placeholder-protected technical notation. Order matters: the most specific
 // patterns run first so a quoted type name is masked as one single token.
 const MDR_PROTECTED_PATTERNS = [
+    // ISO 20022 identifiers, whole or abbreviated: pacs.008.001.08, semt.002.
+    // Unmasked, the engine returned "semt.002" as "Sem.002".
+    /\b[a-zA-Z]{4}\.\d{3}(?:\.\d{3}(?:\.\d{2})?)?\b/g,
     /<[A-Za-z][A-Za-z0-9]*>/g,              // XML tags: <SctiesStmtQry>
     /"[^"\n]{1,80}"/g,                       // quoted type/section names
     /\bMax\d+(?:Text|Binary|Number)\b/g,     // Max35Text, Max350Text
@@ -4853,6 +5082,16 @@ function protectTechnicalTerms(text) {
         });
     });
     return { masked, tokens };
+}
+
+// Is there anything to translate at all? A cell holding only an identifier
+// ("semt.002", "<Prtry>", "Max35Text", "BIC") has no prose in it: sending it out
+// spends quota that the real definitions need and lets the engine mangle the
+// identifier. What survives the masking is what a translator can actually read.
+function hasTranslatableProse(text) {
+    const { masked } = protectTechnicalTerms(text);
+    const words = masked.replace(/QQZ\d+/g, ' ').match(/[A-Za-z]{3,}/g);
+    return Boolean(words && words.length);
 }
 
 function restoreTechnicalTerms(text, tokens) {
@@ -5079,6 +5318,8 @@ async function translateChunk(chunk) {
 async function translateText(text) {
     const clean = String(text == null ? '' : text).trim();
     if (!clean || !/[a-zA-Z]/.test(clean)) return text;
+    // Pure notation is returned untouched instead of being sent to an engine.
+    if (!hasTranslatableProse(clean)) return text;
     const { cache, inFlight } = MDR.translation;
     if (cache.has(clean)) return cache.get(clean);
     // Reuse the same pending Promise when identical definitions are visible in
@@ -5177,9 +5418,32 @@ function finishTranslationTask(task) {
     }
 }
 
+// While every provider is on hold, firing requests only burns the two attempts of
+// each text against a service that is certain to answer 429, and the view stays
+// half in English until the user presses "Reintentar". The queue waits instead and
+// resumes on its own, ticking once a second so the countdown stays honest.
+let translationWakeTimer = null;
+
+function scheduleTranslationWake() {
+    if (translationWakeTimer) return;
+    translationWakeTimer = setTimeout(() => {
+        translationWakeTimer = null;
+        updateTranslateStatus();
+        drainTranslationQueue();
+    }, 1000);
+}
+
+function cancelTranslationWake() {
+    if (!translationWakeTimer) return;
+    clearTimeout(translationWakeTimer);
+    translationWakeTimer = null;
+}
+
 function drainTranslationQueue() {
     const state = MDR.translation;
     while (state.enabled && state.active < state.maxConcurrent && state.queue.length) {
+        // Nothing is dispatched during the cooldown: the tasks keep their place.
+        if (translationCooldownMs() > 0) { scheduleTranslationWake(); return; }
         const task = state.queue.shift();
         const node = task.node;
         if (task.generation !== state.generation || !node.isConnected) {
@@ -5242,6 +5506,9 @@ function enqueueTranslationNode(node, priority = false) {
     if (!node || node.dataset.translationState) return;
     const original = node.dataset.origText || node.textContent;
     if (!original || !/[a-zA-Z]/.test(original)) return;
+    // Identifier-only nodes never enter the queue: that is what keeps the quota
+    // for the prose of both halves of the combined view.
+    if (!hasTranslatableProse(original)) return;
 
     if (!node.dataset.origText) node.dataset.origText = original;
     node.dataset.translationState = 'queued';
@@ -5276,7 +5543,9 @@ function restoreOriginalText() {
 }
 
 function translationTargets() {
-    return [document.getElementById('contentPanel'), document.getElementById('detailContent')].filter(Boolean);
+    // In the combined workspace the business half lives in its own pane.
+    return [document.getElementById('contentPanel'), document.getElementById('part1Panel'),
+        document.getElementById('detailContent')].filter(Boolean);
 }
 
 function updateScopeUsageLabels(useSpanish) {
@@ -5295,6 +5564,7 @@ function toggleTranslation() {
     state.pending = 0;
     state.failed = 0;
     state.enabled = enable;
+    cancelTranslationWake();
 
     const btn = document.getElementById('translateBtn');
     if (enable) {
@@ -5319,9 +5589,12 @@ function initTranslationObserver() {
     const observer = new MutationObserver(scheduleTranslation);
     translationTargets().forEach(target => observer.observe(target, { childList: true, subtree: true }));
     // Re-scan after scrolling as a safeguard for content inserted lazily by
-    // browser rendering or subsequent navigation actions.
-    const mainContent = document.getElementById('mainContent');
-    if (mainContent) mainContent.addEventListener('scroll', scheduleTranslation, { passive: true });
+    // browser rendering or subsequent navigation actions. In the combined
+    // workspace each half scrolls on its own, so both panes are watched.
+    ['mainContent', 'contentPanel', 'part1Panel'].forEach(id => {
+        const node = document.getElementById(id);
+        if (node) node.addEventListener('scroll', scheduleTranslation, { passive: true });
+    });
 }
 
 // Renders the datatype's own definition and format facets (Max35Text, ISODateTime,
@@ -5430,7 +5703,9 @@ function isType(s) {
 function showNavigator() {
     $uploadScreen.classList.add('hidden');
     $navScreen.classList.remove('hidden');
-    // Open on whichever part is loaded; the technical view wins when both are.
+    applyWorkspaceMode();
+    // Two documents of the same domain are not two views: they are one screen.
+    if (Workspace.split) { openCombinedWorkspace(); return; }
     const availability = navPartAvailability();
     setNavPart(availability[2] ? 2 : 1);
 }
@@ -5441,11 +5716,115 @@ function navPartAvailability() {
     return { 1: PART1.loaded, 2: Object.keys(MDR.messages).length > 0 };
 }
 
+// ===== Combined workspace =====
+// When both parts are loaded the screen splits in two halves that stay in sync:
+// the Word section on the left, the structure of the message it describes on the
+// right. With a single document there is one pane and everything behaves as before.
+const Workspace = { split: false, focus: 0, syncing: false };
+
+function splitActive() {
+    const availability = navPartAvailability();
+    return Boolean(availability[1] && availability[2]);
+}
+
+// Where each half renders. Part 2 always owns #contentPanel, so every existing
+// technical renderer keeps working untouched.
+function partPanel(part) {
+    if (part === 1 && Workspace.split) return document.getElementById('part1Panel');
+    return $contentPanel;
+}
+
+// Each half carries its own trail inside its pane; with one document the trail
+// goes back to the top bar.
+function partCrumb(part) {
+    if (!Workspace.split) return $breadcrumb;
+    return document.getElementById(part === 1 ? 'bizCrumb' : 'techCrumb');
+}
+
+function applyWorkspaceMode() {
+    Workspace.split = splitActive();
+    const main = document.getElementById('mainContent');
+    const workspace = document.getElementById('workspace');
+    const biz = document.getElementById('bizPane');
+    if (main) main.classList.toggle('is-split', Workspace.split);
+    if (workspace) workspace.classList.toggle('is-split', Workspace.split);
+    if (biz) biz.classList.toggle('hidden', !Workspace.split);
+    if (!Workspace.split) {
+        setSplitFocus(0);
+        const panel = document.getElementById('part1Panel');
+        if (panel) panel.innerHTML = '';
+        ['bizCrumb', 'techCrumb'].forEach(id => {
+            const node = document.getElementById(id);
+            if (node) node.innerHTML = '';
+        });
+    }
+}
+
+function setSplitFocus(part) {
+    Workspace.focus = part;
+    const workspace = document.getElementById('workspace');
+    if (!workspace) return;
+    workspace.classList.toggle('focus-1', part === 1);
+    workspace.classList.toggle('focus-2', part === 2);
+}
+
+function toggleSplitFocus(part) {
+    setSplitFocus(Workspace.focus === part ? 0 : part);
+}
+
+function openCombinedWorkspace() {
+    // The sidebar starts on the message list; the switch only changes the index.
+    setNavPart(2);
+    const firstId = Object.keys(MDR.messages)[0];
+    if (firstId) navigateToMessage(firstId);
+    // navigateToMessage() fills the business pane through the sync. If this
+    // message is not explained anywhere, the index of the Word is a better start.
+    if (!NavState.sectionId) showPart1Overview();
+    $breadcrumb.innerHTML = `<span class="crumb-current">Vista combinada${
+        PAIRING.domain ? ` &middot; ${escapeHtml(PAIRING.domain)}` : ''}</span>`;
+}
+
+// The halves follow each other: opening a message brings up the section that
+// explains it, and opening a section brings up the message it describes. The
+// guard stops the two from calling each other in a loop.
+function syncBusinessToMessage(msgId) {
+    if (!Workspace.split || Workspace.syncing) return;
+    const context = businessContextFor(msgId);
+    if (!context || !context.sections.length) return;
+    // A section with a reconstructed flow explains more than a passing mention.
+    const target = context.flows.length ? context.flows[0].section : context.sections[0];
+    if (!target || NavState.sectionId === target.id) return;
+    // Already reading a section that talks about this message: leave it in place.
+    if (NavState.sectionId) {
+        const current = part1SectionById(NavState.sectionId);
+        if (current && technicalBridgeFor(current).messages.some(item => item.msgId === msgId)) return;
+    }
+    Workspace.syncing = true;
+    try { openPart1Section(target.id); } finally { Workspace.syncing = false; }
+}
+
+function syncMessageToSection(section) {
+    if (!Workspace.split || Workspace.syncing) return;
+    const { messages } = technicalBridgeFor(section);
+    if (!messages.length) return;
+    if (messages.some(item => item.msgId === MDR.currentMessage)) return;
+    Workspace.syncing = true;
+    try { navigateToMessage(messages[0].msgId); } finally { Workspace.syncing = false; }
+}
+
+// Entry point for every link that comes from the technical side.
+function showBusinessSection(sectionId) {
+    if (!Workspace.split && NavState.part !== 1) setNavPart(1);
+    openPart1Section(sectionId);
+}
+
 function updatePartSwitch() {
     const availability = navPartAvailability();
+    // The switch is only visible with both parts loaded, and then the content of
+    // both is already on screen: what it chooses is the index of the sidebar.
     const titles = {
-        1: 'Parte 1: contexto de negocio, actores y flujos',
-        2: 'Parte 2: estructura técnica de los mensajes'
+        1: 'Panel lateral: índice del Word (Parte 1)',
+        2: 'Panel lateral: lista de mensajes (Parte 2)'
     };
     [1, 2].forEach(part => {
         const button = document.getElementById(`partSwitchBtn${part}`);
@@ -5478,6 +5857,14 @@ function setNavPart(part) {
     }
     closeDetailPanel();
     updatePartSwitch();
+
+    // In the combined workspace both halves stay on screen: the switch only
+    // decides which index the sidebar shows, it never replaces the content.
+    if (Workspace.split) {
+        if (part === 1) renderPart1Outline();
+        else renderMessageList();
+        return;
+    }
 
     if (part === 1) {
         renderPart1Outline();
@@ -5536,8 +5923,15 @@ function resetPart2State() {
     // The schema viewer holds nodes that point at the discarded elements.
     if (typeof schemaResetSession === 'function') schemaResetSession('');
     if (typeof SchemaViewer === 'object' && SchemaViewer) SchemaViewer.root = null;
+    resetConvergence();
+}
+
+// The link between the two parts dies with either of them.
+function resetConvergence() {
     CONVERGENCE.built = false;
     CONVERGENCE.messages = [];
+    CONVERGENCE.bySection = null;
+    CONVERGENCE.linkedSections = 0;
 }
 
 // Only the business side (the Word).
@@ -5555,8 +5949,8 @@ function resetPart1State() {
     PART1.roles = [];
     PART1.stats = {};
     PART1.__actorVocab = null;
-    CONVERGENCE.built = false;
-    CONVERGENCE.messages = [];
+    PART1.__actorDisplay = null;
+    resetConvergence();
     closeFigureViewer();
 }
 
@@ -5631,6 +6025,8 @@ async function goHome() {
     $breadcrumb.innerHTML = '';
     $contentPanel.innerHTML = '';
     $messageList.innerHTML = '';
+    // The combined workspace collapses back to a single pane.
+    applyWorkspaceMode();
     const outline = document.getElementById('part1Outline');
     if (outline) outline.innerHTML = '';
     $searchInput.value = '';
@@ -5716,7 +6112,7 @@ function navigateToMessage(msgId) {
     closeDetailPanel();
 
     // Breadcrumb
-    $breadcrumb.innerHTML = `<span class="crumb-current">${msgId} - ${msg.name}</span>`;
+    partCrumb(2).innerHTML = `<span class="crumb-current">${msgId} - ${msg.name}</span>`;
 
     // Main content
     // Counts computed up front so the header can summarise the message at a glance.
@@ -5842,6 +6238,8 @@ function navigateToMessage(msgId) {
     }
 
     $contentPanel.innerHTML = html;
+    // Split: only the technical half moves back to the top.
+    if (Workspace.split) $contentPanel.scrollTop = 0;
 
     const bbSearchInput = document.getElementById('bbSearchInput');
     if (bbSearchInput) {
@@ -5853,6 +6251,8 @@ function navigateToMessage(msgId) {
             }
         });
     }
+    // Bring up the part of the Word that explains this message.
+    syncBusinessToMessage(msgId);
 }
 
 // The message's own building blocks are the entries declared under
@@ -6148,7 +6548,7 @@ function navigateToBB(msgId, blockRef) {
     bb = ensureCanonicalBlockElements(msgId, bb);
 
     // Breadcrumb
-    $breadcrumb.innerHTML = `<span class="crumb" onclick="navigateToMessage('${msgId}')">${msgId}</span>
+    partCrumb(2).innerHTML = `<span class="crumb" onclick="navigateToMessage('${msgId}')">${msgId}</span>
         <span class="crumb-sep">&rsaquo;</span>
         <span class="crumb-current">${bb.name} &lt;${bb.tag}&gt;</span>`;
 
@@ -6553,7 +6953,7 @@ function navigateToBBByTag(msgId, tag) {
     // Try to find elements that belong to this tag as a container
     const childElements = msg.elements.filter(e => e.bb === tag);
     if (childElements.length > 0) {
-        $breadcrumb.innerHTML = `<span class="crumb" onclick="navigateToMessage('${msgId}')">${msgId}</span>
+        partCrumb(2).innerHTML = `<span class="crumb" onclick="navigateToMessage('${msgId}')">${msgId}</span>
             <span class="crumb-sep">&rsaquo;</span>
             <span class="crumb-current">${tag}</span>`;
         let html = `<button type="button" class="btn-back" onclick="navigateToMessage('${msgId}')">&#8592; Volver al mensaje</button>
@@ -6980,6 +7380,45 @@ function schemaStructureBlock(msgId, element, context) {
     return ensureCanonicalBlockElements(msgId, block) || block;
 }
 
+// Which MessageComponent a structure points at. The MDR states it as
+// "<Block> contains PartyIdentification36 on page N", which is the piece that
+// tells you two different fields are really the same reusable component.
+// "±" is the mark for "complex" and "CodeSet" is a datatype: neither is a name.
+const SCHEMA_NOT_A_COMPONENT = /^(?:codeset|text|indicator|quantity|amount|rate|date|datetime|\u00b1)$/i;
+
+function schemaComponentName(block) {
+    if (!block) return '';
+    // componentTypeName covers both wordings of the sentence; containedTypeName
+    // only the one that points at another page.
+    const declared = String(block.componentTypeName || block.containedTypeName || '').trim();
+    if (declared && !SCHEMA_NOT_A_COMPONENT.test(declared)) return declared;
+    // Fallback: the resolved type of a typed row, only when it is shaped like a
+    // component name (CamelCase closed by the ISO version number).
+    const resolved = String(block.typeName || '').trim();
+    if (resolved && !SCHEMA_NOT_A_COMPONENT.test(resolved) && /^[A-Z][A-Za-z0-9]*\d+$/.test(resolved)) return resolved;
+    return '';
+}
+
+// Resolved on demand and kept on the node: hovering the same row costs nothing.
+function schemaComponentInfo(node) {
+    if (node.componentInfo !== undefined) return node.componentInfo;
+    node.componentInfo = null;
+    if (node.complex) {
+        const block = schemaStructureBlock(node.msgId, node.element, node.context);
+        const name = schemaComponentName(block);
+        if (name) {
+            node.componentInfo = {
+                name,
+                // Only present when the document sends you to another page for it.
+                page: Number(block.componentTypePage || block.containedTypePage || block.typePage || 0) || null,
+                section: block.section || '',
+                fields: (block.elements || []).length
+            };
+        }
+    }
+    return node.componentInfo;
+}
+
 // {Or ... Or} in the MDR marks a choice. Consecutive marked siblings share one
 // group, so every member is reported as part of the same "select one of".
 function schemaOrGroups(siblings) {
@@ -7286,7 +7725,10 @@ function schemaTipChips(node) {
         : '<span class="sch-badge sch-opt">Opcional</span>');
     if (node.isOr) chips.push(`<span class="sch-badge sch-or">SelectOneOf ${node.orGroup}</span>`);
     if (node.isArray) chips.push('<span class="sch-badge sch-arr">array</span>');
-    if (node.typeInfo && node.typeInfo.label) chips.push(`<span class="sch-tip-chip">${escapeHtml(node.typeInfo.label)}</span>`);
+    // A structure is an object: reporting "string" for it, which is the default of
+    // an unknown datatype, contradicted the braces shown in the tree.
+    if (node.complex) chips.push(`<span class="sch-tip-chip">${node.isArray ? 'array de objetos' : 'object'}</span>`);
+    else if (node.typeInfo && node.typeInfo.label) chips.push(`<span class="sch-tip-chip">${escapeHtml(node.typeInfo.label)}</span>`);
     if (node.mult) chips.push(`<span class="sch-tip-chip">${escapeHtml(node.mult)}</span>`);
     if (node.typeInfo && node.typeInfo.datatypeName) chips.push(`<span class="sch-tip-chip">${escapeHtml(node.typeInfo.datatypeName)}</span>`);
     if (node.constraint) chips.push(`<span class="sch-badge sch-cons">${escapeHtml(node.constraint)}</span>`);
@@ -7307,11 +7749,26 @@ function schemaTipHtml(node, definitionState, definitionText) {
     const original = node.definition && definitionState !== 'empty'
         ? `<div class="sch-tip-orig">${escapeHtml(node.definition.substring(0, 400))}</div>`
         : '';
+    // Which reusable MessageComponent this structure is: the same "Party" row can
+    // be a PartyIdentification36 here and something else in another message.
+    const component = schemaComponentInfo(node);
+    const componentHtml = component
+        ? `<div class="sch-tip-ref">
+                <span class="sch-tip-ref-label">Referencia a MessageComponent</span>
+                <span class="sch-tip-ref-name">${escapeHtml(component.name)}</span>
+                <span class="sch-tip-ref-meta">${[
+                    component.fields ? `${component.fields} campo${component.fields === 1 ? '' : 's'}` : '',
+                    component.section ? `§${escapeHtml(component.section)}` : '',
+                    component.page ? `p.${component.page}` : ''
+                ].filter(Boolean).join(' \u00b7 ')}</span>
+           </div>`
+        : '';
     return `<div class="sch-tip-head">
             <span class="sch-tip-name">${escapeHtml(node.name || node.tag)}</span>
             ${node.tag && node.tag !== node.name ? `<span class="sch-tip-tag">&lt;${escapeHtml(node.tag)}&gt;</span>` : ''}
         </div>
         <div class="sch-tip-meta">${schemaTipChips(node)}</div>
+        ${componentHtml}
         <div class="sch-tip-def" data-state="${definitionState}">${escapeHtml(body)}${langTag}</div>
         ${original}`;
 }
