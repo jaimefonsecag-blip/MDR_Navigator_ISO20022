@@ -10,6 +10,14 @@ dist/
 *.docx
 *.pdf
 
+# Libros de codigos externos que se usan solo en local (el descargado de ISO con
+# su nombre de trimestre, copias de trabajo...).
+*.xlsx
+# Excepcion deliberada: esta copia SI se publica junto a la pagina para que el
+# navegador la cargue sola y nadie tenga que arrastrar el archivo.
+# Es contenido de ISO 20022: revisar sus condiciones antes de hacer publico el repo.
+!external-codesets.xlsx
+
 # Basura de Windows / macOS / editores.
 desktop.ini
 Thumbs.db

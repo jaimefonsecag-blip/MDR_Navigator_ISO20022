@@ -59,22 +59,53 @@ npm install   # solo para poder ejecutar las verificaciones
 npm run check
 ```
 
-`npm run check` valida cinco cosas:
+`npm run check` valida nueve cosas:
 
 | Verificación | Qué comprueba |
 |---|---|
 | `check-syntax` | El script embebido se parsea sin errores |
 | `check-handlers` | Cada handler `onclick`, helper, referencia DOM en caché e id del markup existe de verdad |
+| `check-filenames` | Los nombres publicados por ISO se reconocen y se emparejan por dominio |
 | `check-translation` | Diccionario de frases, glosario, concordancia de género y enmascarado de identificadores |
 | `check-reset` | Volver al inicio limpia todo el estado del parseo y libera los blobs de los diagramas |
+| `check-workspace` | La vista combinada: cada mitad pinta en su panel y las dos se sincronizan sin bucles |
+| `check-schema` | La frase `contains` del MDR y la referencia al MessageComponent del esquema JSON |
+| `check-external-codes` | Lee el Excel real de códigos externos: hoja, columnas, códigos retirados y cableado |
 | `check-docx-parser` | Ejecuta el parser DOCX real contra un MDR de ejemplo y valida secciones, diagramas, tablas, actores y flujos |
 
 `check-docx-parser` necesita un `.docx` de ejemplo en la raíz; si no lo
 encuentra, se omite sin fallar. Los documentos MDR no se versionan: están
 excluidos en `.gitignore` porque son publicaciones con derechos de ISO 20022.
 
+## Códigos externos ISO
+
+Los CodeSet externos (`ExternalPurpose1Code`, `ExternalAccountIdentification1Code`,
+etc.) no traen sus valores dentro del MDR: ISO los publica aparte, en un Excel que
+se actualiza cada trimestre, en
+<https://www.iso20022.org/catalogue/additional-content-messages/external-code-sets>.
+
+El navegador los toma de `external-codesets.xlsx` publicado junto al `index.html`.
+Ocurre por debajo, al abrir la página: no hay ninguna tarjeta ni paso de carga en la
+interfaz, los campos `CodeSet` simplemente muestran sus valores. El panel del
+CodeSet indica de dónde salieron, para no confundirlos con los del MDR.
+
+Quien abra el `index.html` desde el disco (`file://`) no puede descargarlo: el
+navegador prohíbe que una página local lea a sus vecinos. Solo en ese caso, y solo
+al abrir un CodeSet externo sin valores, aparece un botón para elegir el Excel a
+mano.
+
+**Para actualizar de trimestre:** descarga el nuevo libro de ISO y sobrescribe
+`external-codesets.xlsx` con él. El nombre es fijo a propósito, para que la URL no
+cambie. La tarjeta muestra la fecha de publicación que trae el propio libro, así
+que si se olvida la actualización se ve en pantalla.
+
+`.gitignore` ignora `*.xlsx` con una excepción explícita para
+`external-codesets.xlsx`: solo esa copia se versiona. Ojo: es contenido de ISO
+20022, así que conviene revisar sus condiciones de uso antes de publicar el repo.
+
 ## Privacidad
 
 Todo el procesamiento del PDF y del Word ocurre en el navegador. Lo único que
-sale a la red son las librerías de los CDN y, si se activa la traducción, los
-fragmentos de texto que se envían a las APIs de traducción.
+sale a la red son las librerías de los CDN, el Excel de códigos externos que
+acompaña a la página y, si se activa la traducción, los fragmentos de texto que se
+envían a las APIs de traducción.
