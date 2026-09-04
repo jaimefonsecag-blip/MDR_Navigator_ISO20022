@@ -566,6 +566,22 @@ body {
 .cs-chip:hover { background:var(--accent-gradient); color:var(--on-accent); border-color:var(--accent-strong); transform:translateY(-1px); }
 .cs-count { color:var(--text-dim); }
 .cs-external { margin-top:0.5rem; padding:0.6rem 0.75rem; color:var(--warning); background:var(--warning-dim); border-left:3px solid var(--warning); border-radius:5px; font-size:0.8rem; line-height:1.4; }
+/* The same notice once the values are available: no longer a dead end. */
+.cs-external.is-resolved { color:var(--success); background:var(--success-dim); border-left-color:var(--success); }
+.cs-chip.is-external-file { border-color:var(--success); }
+.btn-load-codes { display:inline-block; margin-left:0.4rem; padding:0.15rem 0.55rem; font:inherit; font-size:0.75rem; font-weight:600; color:var(--on-accent); background:var(--accent-gradient); border:0; border-radius:99px; cursor:pointer; }
+.code-table tr.is-obsolete td { opacity:0.62; text-decoration:line-through solid rgba(127,127,127,0.5); }
+.code-table tr.is-obsolete td:last-child { text-decoration:none; }
+.cs-code-notes { margin-top:0.15rem; display:flex; gap:0.3rem; flex-wrap:wrap; }
+.cs-code-flag { padding:0 0.35rem; font-size:0.66rem; font-weight:800; text-transform:uppercase; letter-spacing:0.3px; color:var(--warning); background:var(--warning-dim); border-radius:4px; }
+.cs-code-repl { font-size:0.7rem; color:var(--text-dim); font-style:italic; }
+
+/* The external code sets travel with the page, so there is no card for them. This
+   input only exists for the page opened from the filesystem, which cannot download
+   them: it stays out of the layout but clickable from script. */
+.input-offscreen { position:fixed; left:-9999px; width:1px; height:1px; opacity:0; }
+/* Where the values came from, next to the values themselves. */
+.cs-external-source { display:block; margin-top:0.2rem; font-size:0.72rem; color:var(--text-dim); }
 .cs-format { display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.4rem; }
 .cs-format-item { padding:0.2rem 0.45rem; color:var(--text-secondary); background:var(--bg-panel); border-radius:4px; font-family:monospace; font-size:0.75rem; }
 
@@ -971,6 +987,27 @@ body.theme-light .cf-overlay { background:rgba(14,21,51,0.38); }
 .cf-btn-primary { color:var(--on-accent); background:var(--accent-gradient); box-shadow:var(--shadow-brand); }
 .cf-btn-primary:hover { transform:translateY(-1px); box-shadow:0 10px 30px rgba(109,40,217,0.34); }
 
+/* The CodeSet a field points at, on the row: clickable, because it is the way into
+   the list of values. */
+.sch-codeset {
+  display:inline-flex; align-items:center; gap:0.3rem; padding:0 0.35rem 0 0;
+  font-size:0.7rem; cursor:pointer; border-radius:99px;
+  background:var(--tag-bg); border:1px solid transparent; transition:border-color 0.15s var(--ease);
+}
+.sch-codeset:hover, .sch-codeset:focus-visible { border-color:var(--accent); outline:none; }
+.sch-codeset-label {
+  padding:0 0.35rem; border-radius:99px 0 0 99px;
+  font-size:0.62rem; font-weight:800; text-transform:uppercase; letter-spacing:0.4px;
+  color:var(--on-accent); background:var(--brand-blue-deep);
+}
+.sch-codeset-name { color:var(--brand-blue); font-weight:700; font-family:'Cascadia Code','Consolas',monospace; }
+.sch-codeset-count { color:var(--text-dim); }
+/* No values yet: the tag says so and offers the workbook that has them. */
+.sch-codeset.is-pending { background:var(--warning-dim); }
+.sch-codeset.is-pending .sch-codeset-label { background:var(--warning); color:#1A1200; }
+.sch-codeset.is-pending .sch-codeset-name { color:var(--warning); }
+.sch-tree.sch-no-meta .sch-codeset-count { display:none; }
+
 /* Search hits inside the schema tree */
 .sch-hit { padding:0 1px; color:inherit; background:rgba(251,191,36,0.42); border-radius:3px; box-shadow:0 0 0 1px rgba(251,191,36,0.55); font-weight:700; }
 body.theme-light .sch-hit { background:rgba(250,204,21,0.55); box-shadow:0 0 0 1px rgba(180,83,9,0.35); }
@@ -1274,6 +1311,13 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
   </div>
 </div>
 
+<!-- The external code sets arrive with the page, so this input is not part of the
+     interface. It is the way back in when the page runs from the filesystem and
+     cannot fetch its own neighbours: the CodeSet panel offers it only then. It sits
+     outside both screens so a programmatic click always opens the picker. -->
+<input type="file" id="fileInputExternalCodes" class="input-offscreen" accept=".xlsx,.xls"
+       tabindex="-1" aria-hidden="true" aria-label="Cargar el Excel de códigos externos ISO 20022" />
+
 <!-- JSON SCHEMA VIEWER (in-app overlay page) -->
 <div id="schemaOverlay" class="sch-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="schemaTitle">
   <div class="sch-modal" role="document">
@@ -1431,6 +1475,11 @@ const MDR = {
         email: ''
     },
     functionalityParseState: { msgId: '', mode: '', lines: [], lastPage: 0, lastY: null },
+    // ISO publishes the values of the external CodeSets apart from the MDR, in a
+    // quarterly spreadsheet. Loaded here, an "ExternalAccountIdentification1Code"
+    // stops being a dead end. It belongs to no MDR in particular, so it survives
+    // loading another document.
+    externalCodeSets: { loaded: false, fileName: '', publication: '', byName: new Map(), sets: 0, codes: 0 },
     // Exact row-to-element references. Repeated XML tags such as <Cd> must
     // never be resolved again through msg.elements after they are rendered.
     elementDetailIndex: new Map(),
@@ -1439,6 +1488,182 @@ const MDR = {
     currentMessage: null,
     navHistory: []
 };
+
+// ===== EXTERNAL CODE SETS (ISO quarterly spreadsheet) =====
+// The MDR names an external CodeSet and stops there: its values live in
+// "<quarter>_externalcodesets_v<n>.xlsx", sheet AllCodeSets, one row per code with
+// the set in column A and the code in column B. Read once, every external CodeSet
+// of every message can show its values like an internal one.
+const EXTERNAL_CODES_SHEET = 'allcodesets';
+// Recognised by header name so a reordered column in a future quarter still works;
+// the letter is the fallback the user described (A = set, B = code).
+const EXTERNAL_CODES_COLUMNS = [
+    { key: 'set', header: /^code\s*set$/, fallback: 0 },
+    { key: 'code', header: /^code\s*value$/, fallback: 1 },
+    { key: 'name', header: /^code\s*name$/, fallback: 2 },
+    { key: 'definition', header: /^code\s*definition$/, fallback: 3 },
+    { key: 'status', header: /^status$/, fallback: -1 },
+    { key: 'replacedBy', header: /^replaced\s*by$/, fallback: -1 }
+];
+// Published next to index.html this name is picked up on its own, so a shared page
+// needs no manual load. Kept fixed on purpose: the quarter changes every release.
+const EXTERNAL_CODES_PUBLISHED_FILE = 'external-codesets.xlsx';
+
+function externalCodesColumnMap(headerRow) {
+    const cells = (headerRow || []).map(cell => String(cell || '').trim().toLowerCase());
+    const map = {};
+    EXTERNAL_CODES_COLUMNS.forEach(column => {
+        const found = cells.findIndex(cell => column.header.test(cell));
+        map[column.key] = found === -1 ? column.fallback : found;
+    });
+    return map;
+}
+
+// The workbook also states which quarter it is, which is worth showing: the codes
+// are maintained quarterly and a stale sheet is a real risk.
+function externalCodesPublication(workbook) {
+    const sheetName = workbook.SheetNames.find(name => /intro|history/i.test(name));
+    if (!sheetName) return '';
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '' });
+    const row = rows.find(cells => /publication\s*date/i.test(String(cells[0] || '')));
+    return row ? String(row[1] || '').trim() : '';
+}
+
+function parseExternalCodeSets(workbook) {
+    const sheetName = workbook.SheetNames.find(name =>
+        String(name).replace(/\s+/g, '').toLowerCase() === EXTERNAL_CODES_SHEET)
+        || workbook.SheetNames.find(name => /codeset/i.test(name));
+    if (!sheetName) {
+        throw new Error('El libro no tiene una hoja AllCodeSets con los códigos.');
+    }
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '' });
+    if (rows.length < 2) throw new Error(`La hoja ${sheetName} está vacía.`);
+    const at = externalCodesColumnMap(rows[0]);
+    const byName = new Map();
+    let codes = 0;
+    rows.slice(1).forEach(cells => {
+        const setName = String(cells[at.set] || '').trim();
+        const code = String(cells[at.code] || '').trim();
+        if (!setName || !code) return;
+        const key = normalizeCatalogName(setName);
+        if (!byName.has(key)) {
+            byName.set(key, {
+                name: setName, type: 'CodeSet', external: true, fromExternalFile: true,
+                confirmed: true, format: {}, definition: '', codes: []
+            });
+        }
+        byName.get(key).codes.push({
+            code,
+            name: String(cells[at.name] || '').trim(),
+            definition: String(cells[at.definition] || '').trim(),
+            status: at.status === -1 ? '' : String(cells[at.status] || '').trim(),
+            replacedBy: at.replacedBy === -1 ? '' : String(cells[at.replacedBy] || '').trim()
+        });
+        codes++;
+    });
+    if (!byName.size) throw new Error(`No se encontraron códigos en la hoja ${sheetName}.`);
+    return { byName, sets: byName.size, codes, sheetName };
+}
+
+async function loadExternalCodeSetsFromBuffer(buffer, fileName) {
+    if (!libAvailable('XLSX')) {
+        throw new Error('Falta la librería SheetJS: hace falta conexión a internet la primera vez que se abre el archivo.');
+    }
+    const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+    const parsed = parseExternalCodeSets(workbook);
+    const store = MDR.externalCodeSets;
+    store.byName = parsed.byName;
+    store.sets = parsed.sets;
+    store.codes = parsed.codes;
+    store.fileName = fileName || '';
+    store.publication = externalCodesPublication(workbook);
+    store.loaded = true;
+    // A PDF already open gets its external CodeSets filled in right away.
+    const filled = hydrateExternalCodeSets();
+    // Whatever is on screen was rendered without the values: the message, and the
+    // JSON schema if it is open, where the codes now have somewhere to appear.
+    if (MDR.currentMessage && !$navScreen.classList.contains('hidden')) navigateToMessage(MDR.currentMessage);
+    if (SchemaViewer.open) schemaReopen();
+    return { ...parsed, filled };
+}
+
+async function loadExternalCodesFile(file) {
+    try {
+        await loadExternalCodeSetsFromBuffer(await file.arrayBuffer(), file.name);
+    } catch (error) {
+        MDR.externalCodeSets.loaded = false;
+        // There is no status line to write into any more, and a silent failure
+        // would look like the file simply did nothing.
+        showConfirm({
+            icon: '\u26A0',
+            title: 'No se pudo leer el Excel de códigos',
+            message: `${error && error.message ? error.message : 'El archivo no se pudo interpretar.'} `
+                + 'Debe ser el libro de códigos externos publicado por ISO 20022, con su hoja AllCodeSets.',
+            confirmLabel: 'Entendido',
+            cancelLabel: 'Cerrar'
+        });
+    }
+}
+
+// Published alongside the page, this is the normal path: the codes arrive on their
+// own and nobody has to load anything. Only over http(s), since a file:// page
+// cannot fetch its neighbours, and silent on failure because the card is still
+// there as the way in.
+async function autoLoadPublishedExternalCodes() {
+    if (MDR.externalCodeSets.loaded) return;
+    if (!/^https?:$/.test(location.protocol)) return;
+    try {
+        // Plain fetch, with the browser's normal revalidation: the workbook is
+        // replaced every quarter, and pinning the cache would serve the old codes
+        // for ever.
+        const response = await fetch(EXTERNAL_CODES_PUBLISHED_FILE);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        await loadExternalCodeSetsFromBuffer(await response.arrayBuffer(), EXTERNAL_CODES_PUBLISHED_FILE);
+    } catch (error) {
+        if (state) { state.className = 'ext-state'; state.textContent = ''; }
+    }
+}
+
+// Fills in the values of every external CodeSet the loaded MDR names.
+function hydrateExternalCodeSets() {
+    const store = MDR.externalCodeSets;
+    if (!store.loaded) return 0;
+    let filled = 0;
+    Object.values(MDR.codeSetsByName || {}).forEach(codeSet => {
+        if (!codeSet || (codeSet.codes && codeSet.codes.length)) return;
+        const source = store.byName.get(normalizeCatalogName(codeSet.name));
+        if (!source) return;
+        codeSet.codes = source.codes;
+        codeSet.external = true;
+        codeSet.fromExternalFile = true;
+        codeSet.externalPublication = store.publication;
+        filled++;
+    });
+    return filled;
+}
+
+// Values for a CodeSet the MDR only mentions by name, so a field can show them
+// even when the document never listed the set.
+function externalCodeSetFor(name) {
+    const store = MDR.externalCodeSets;
+    if (!store.loaded || !name) return null;
+    const found = store.byName.get(normalizeCatalogName(name));
+    if (!found) return null;
+    return { ...found, externalPublication: store.publication };
+}
+
+// Where the values came from is reported where they are read (the CodeSet panel and
+// the chips of the message), not as a setup step on the upload screen.
+function externalCodesSourceLabel() {
+    const store = MDR.externalCodeSets;
+    if (!store.loaded) return '';
+    const parts = [`${store.codes} códigos de ${store.sets} code sets`];
+    if (store.publication) parts.push(`publicación ${store.publication}`);
+    parts.push(store.fileName === EXTERNAL_CODES_PUBLISHED_FILE
+        ? 'publicados con esta página'
+        : `desde ${store.fileName}`);
+    return parts.join(' · ');
+}
 
 // ===== DOM REFERENCES =====
 const $uploadScreen = document.getElementById('uploadScreen');
@@ -1480,6 +1705,23 @@ function bindPartDropZone(zone, input, expectedPart) {
 bindPartDropZone($dropZonePart1, $fileInputPart1, 1);
 bindPartDropZone($dropZonePart2, $fileInputPart2, 2);
 
+// No card and no drop zone: the code sets are part of the page. This only wires the
+// offscreen input that the CodeSet panel offers when the values could not be
+// downloaded (a page opened from the filesystem).
+(function bindExternalCodesInput() {
+    const input = document.getElementById('fileInputExternalCodes');
+    if (!input) return;
+    input.addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (file) loadExternalCodesFile(file);
+    });
+})();
+
+function pickExternalCodesFile() {
+    const input = document.getElementById('fileInputExternalCodes');
+    if (input) input.click();
+}
+
 // Tells the user up front which part will not work, instead of failing on drop.
 function reportMissingLibs() {
     const missing = missingLibs();
@@ -1504,6 +1746,8 @@ $closeDetail.addEventListener('click', closeDetailPanel);
 $searchInput.addEventListener('input', filterMessages);
 initTranslationObserver();
 initTheme();
+// If the page was published with the spreadsheet next to it, nobody has to load it.
+autoLoadPublishedExternalCodes();
 
 // ===== THEME (dark / light) =====
 function applyThemeButtonLabel(isLight) {
@@ -3560,6 +3804,9 @@ async function startProcessing(file) {
         reconcileReferencedBlockTypes();
         resolveBuildingBlockMappings();
         resolveCodeSetMappings();
+        // The external CodeSets this MDR names get their values from the ISO
+        // spreadsheet when it is already loaded.
+        hydrateExternalCodeSets();
         attachElementDefinitions();
         updateProgress(100, 'Completado.');
         await new Promise(r => setTimeout(r, 200));
@@ -5618,19 +5865,35 @@ function datatypeInfoHtml(datatypeName) {
 
 // Renders the "Code | Name | Definition" table (and format/external notes) that
 // the MDR embeds inside a CodeSet element definition.
+// One table for every list of codes, so a value that ISO marked obsolete or
+// replaced is never presented as usable.
+function codeTableHtml(codes) {
+    const rows = (codes || []).map(code => {
+        const obsolete = /obsolete|deprecat|withdrawn/i.test(code.status || '');
+        const notes = [
+            obsolete ? `<span class="cs-code-flag">${escapeHtml(code.status)}</span>` : '',
+            code.replacedBy ? `<span class="cs-code-repl">reemplazado por ${escapeHtml(code.replacedBy)}</span>` : ''
+        ].filter(Boolean).join(' ');
+        return `<tr class="${obsolete ? 'is-obsolete' : ''}">
+            <td><strong>${escapeHtml(code.code)}</strong></td>
+            <td>${escapeHtml(code.name || '')}${notes ? `<div class="cs-code-notes">${notes}</div>` : ''}</td>
+            <td>${escapeHtml(code.definition || '')}</td>
+        </tr>`;
+    }).join('');
+    return `<table class="code-table"><thead><tr><th>Código</th><th>Nombre</th><th>Definición</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
 function codeSetInlineHtml(codeSet) {
     if (!codeSet) return '';
     let html = '';
-    if (codeSet.external) {
-        html += `<div class="cs-external">CodeSet externo: la lista de valores válidos se publica separadamente por ISO 20022 y no se incluye en el MDR.</div>`;
+    if (codeSet.fromExternalFile) {
+        html += `<div class="cs-external is-resolved">Valores tomados del Excel de códigos externos de ISO 20022${
+            codeSet.externalPublication ? ` (publicación ${escapeHtml(codeSet.externalPublication)})` : ''}, porque el MDR no los incluye.</div>`;
+    } else if (codeSet.external) {
+        html += `<div class="cs-external">CodeSet externo: la lista de valores válidos se publica separadamente por ISO 20022 y no se incluye en el MDR.
+            ${MDR.externalCodeSets.loaded ? '' : `<button type="button" class="btn-load-codes" onclick="pickExternalCodesFile()">Cargar el Excel de códigos externos</button>`}</div>`;
     }
-    if (codeSet.codes && codeSet.codes.length) {
-        html += `<table class="code-table"><thead><tr><th>Código</th><th>Nombre</th><th>Definición</th></tr></thead><tbody>`;
-        codeSet.codes.forEach(code => {
-            html += `<tr><td><strong>${code.code}</strong></td><td>${code.name}</td><td>${code.definition}</td></tr>`;
-        });
-        html += `</tbody></table>`;
-    }
+    if (codeSet.codes && codeSet.codes.length) html += codeTableHtml(codeSet.codes);
     const formatEntries = Object.entries(codeSet.format || {});
     if (formatEntries.length) {
         html += `<div class="cs-format">`;
@@ -6231,8 +6494,14 @@ function navigateToMessage(msgId) {
         html += `<div class="codesets-content hidden"><div class="cs-grid">`;
         csKeys.forEach(csName => {
             const codeSet = msg.codeSets[csName];
-            const countLabel = codeSet.external && !codeSet.codes.length ? 'externo' : `${codeSet.codes.length} códigos`;
-            html += `<div class="cs-chip" onclick="showCodeSet('${msgId}','${csName}')">${csName} <span class="cs-count">(${countLabel})</span></div>`;
+            // An external set with no values in the MDR may still have them in the
+            // ISO spreadsheet, and then the chip has to say so.
+            const external = codeSet.codes.length ? null : externalCodeSetFor(csName);
+            const total = codeSet.codes.length || (external ? external.codes.length : 0);
+            const countLabel = total
+                ? `${total} códigos${codeSet.fromExternalFile || external ? ' · ISO' : ''}`
+                : 'externo';
+            html += `<div class="cs-chip${total && (codeSet.fromExternalFile || external) ? ' is-external-file' : ''}" onclick="showCodeSet('${msgId}','${csName}')">${csName} <span class="cs-count">(${countLabel})</span></div>`;
         });
         html += `</div></div>`;
     }
@@ -7117,7 +7386,11 @@ function renderAffectedElements(msgId, cId) {
 
 function showCodeSet(msgId, csName) {
     const msg = MDR.messages[msgId];
-    const codeSet = msg.codeSets[csName];
+    const known = msg.codeSets[csName];
+    // An external set the MDR only mentions still has values to show.
+    const codeSet = known && known.codes && known.codes.length
+        ? known
+        : (externalCodeSetFor(csName) ? { ...(known || {}), ...externalCodeSetFor(csName) } : known);
     if (!codeSet) return;
 
     openDetailPanel();
@@ -7135,18 +7408,22 @@ function showCodeSet(msgId, csName) {
         });
         html += `</div></div>`;
     }
-    if (codeSet.external) {
-        html += `<div class="cs-external">Este es un CodeSet externo. La lista de valores válidos se publica separadamente por ISO 20022 y no está incluida en el MDR.</div>`;
+    if (codeSet.fromExternalFile) {
+        html += `<div class="cs-external is-resolved">CodeSet externo: el MDR no incluye sus valores, así que
+            estos vienen del catálogo de códigos externos de ISO 20022.
+            <span class="cs-external-source">${escapeHtml(externalCodesSourceLabel())}</span></div>`;
+    } else if (codeSet.external) {
+        html += `<div class="cs-external">Este es un CodeSet externo. La lista de valores válidos se publica separadamente por ISO 20022 y no está incluida en el MDR.
+            ${MDR.externalCodeSets.loaded
+                ? 'El Excel cargado no trae este code set.'
+                : `<button type="button" class="btn-load-codes" onclick="pickExternalCodesFile()">Cargar el Excel de códigos externos</button>`}</div>`;
     } else if (codeSet.unresolved) {
         html += `<div class="cs-external">La fila está marcada como CodeSet, pero no fue posible resolver su datatype en las páginas referenciadas del MDR.</div>`;
     }
     if (codeSet.codes.length) {
         html += `<div class="detail-section"><h4>Códigos (${codeSet.codes.length})</h4>`;
-        html += `<table class="code-table"><thead><tr><th>Código</th><th>Nombre</th><th>Definición</th></tr></thead><tbody>`;
-        codeSet.codes.forEach(code => {
-            html += `<tr><td><strong>${code.code}</strong></td><td>${code.name}</td><td>${code.definition}</td></tr>`;
-        });
-        html += `</tbody></table></div>`;
+        html += codeTableHtml(codeSet.codes);
+        html += `</div>`;
     } else if (!codeSet.external && !codeSet.unresolved) {
         html += `<p class="empty-msg">El MDR no contiene valores enumerados para este CodeSet.</p>`;
     }
@@ -7160,10 +7437,22 @@ function showCodeSetForElement(msgId, element) {
         showCodeSet(msgId, element.codeSetName);
         return;
     }
+    // The MDR did not resolve the set, but ISO publishes it by that same name.
+    const external = externalCodeSetFor(element.codeSetName) || externalCodeSetFor(element.datatypeName);
+    if (external) {
+        openDetailPanel();
+        $detailTitle.textContent = external.name;
+        renderDetailContent(`<div class="cs-external is-resolved">CodeSet externo: el MDR no incluye sus valores,
+            así que estos vienen del Excel de códigos externos de ISO 20022${
+            external.externalPublication ? ` (publicación ${escapeHtml(external.externalPublication)})` : ''}.</div>
+            <div class="detail-section"><h4>Códigos (${external.codes.length})</h4>${codeTableHtml(external.codes)}</div>`);
+        return;
+    }
 
     openDetailPanel();
     $detailTitle.textContent = `${element.name} CodeSet`;
-    renderDetailContent(`<div class="cs-external">No fue posible resolver el CodeSet desde la página de detalle ${element.refPage || 'no indicada'}.</div>`);
+    renderDetailContent(`<div class="cs-external">No fue posible resolver el CodeSet desde la página de detalle ${element.refPage || 'no indicada'}.
+        ${MDR.externalCodeSets.loaded ? '' : `<button type="button" class="btn-load-codes" onclick="pickExternalCodesFile()">Cargar el Excel de códigos externos</button>`}</div>`);
 }
 
 function findCodeSetForElementByKey(detailKey) {
@@ -7440,7 +7729,12 @@ function schemaCodeSetFor(element) {
     const name = element && element.codeSetName ? element.codeSetName : '';
     if (!name) return null;
     const msg = MDR.messages[(element && element.msgId) || SchemaViewer.msgId];
-    return (msg && msg.codeSets && msg.codeSets[name]) || MDR.codeSetsByName[name] || null;
+    const known = (msg && msg.codeSets && msg.codeSets[name]) || MDR.codeSetsByName[name] || null;
+    if (known && known.codes && known.codes.length) return known;
+    // The MDR names the set but publishes no values: the ISO spreadsheet has them.
+    const external = externalCodeSetFor(name) || externalCodeSetFor(element.datatypeName);
+    if (!external) return known;
+    return known ? { ...known, codes: external.codes, external: true, fromExternalFile: true } : external;
 }
 
 // Maps an MDR datatype onto a JSON type plus a readable facet label such as
@@ -7876,7 +8170,11 @@ function schemaTypeTooltip(node) {
     if (info.fractionDigits) lines.push(`fractionDigits: ${info.fractionDigits}`);
     if (info.pattern) lines.push(`pattern: ${info.pattern}`);
     if (info.codes && info.codes.length) lines.push(`${info.codes.length} códigos permitidos`);
-    if (info.external) lines.push('CodeSet externo (valores publicados por ISO 20022)');
+    if (info.external) {
+        lines.push(info.codes && info.codes.length
+            ? 'CodeSet externo: valores tomados del Excel de códigos externos de ISO 20022'
+            : 'CodeSet externo (los valores se publican aparte del MDR)');
+    }
     if (node.datatypePage) lines.push(`Página del datatype: ${node.datatypePage}`);
     return lines.join('\n');
 }
@@ -7917,6 +8215,57 @@ function schemaOpenLineHtml(node, brace, count, isEnum) {
     </div>`;
 }
 
+// The name of the CodeSet a field points at, on the row itself and not only in the
+// hover card: it is the piece that says which list of values applies, and clicking
+// it either opens the values or asks for the ISO workbook that holds them.
+function schemaCodeSetTagHtml(node) {
+    const info = node.typeInfo || {};
+    const name = info.datatypeName || (node.element && node.element.codeSetName) || '';
+    // A synthetic "CodeSet_<field>_<tag>" is the parser saying it never resolved one.
+    if (!name || /^CodeSet_/.test(name)) return '';
+    if (info.kind !== 'codeset' && !info.codeSet && !/Code$/.test(name)) return '';
+    const total = (info.codes || []).length;
+    const pending = !total;
+    const label = total ? `${total} códigos` : 'sin valores';
+    const title = total
+        ? `Set de códigos ${name}: ${total} valores. Pulsa para verlos aquí mismo.`
+        : `Set de códigos ${name}. El MDR no publica sus valores; ISO los distribuye aparte.`
+            + (MDR.externalCodeSets.loaded
+                ? ' El catálogo cargado no incluye este set.'
+                : ' Pulsa para cargar el catálogo de códigos externos.');
+    return `<span class="sch-codeset${pending ? ' is-pending' : ''}" role="button" tabindex="0"
+            title="${escapeHtml(title)}" onclick="schemaOpenCodeSet('${node.id}');event.stopPropagation()"
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();schemaOpenCodeSet('${node.id}')}">
+        <span class="sch-codeset-label" aria-hidden="true">set</span>
+        <span class="sch-codeset-name">${escapeHtml(name)}</span>
+        <span class="sch-codeset-count">${escapeHtml(label)}</span>
+    </span>`;
+}
+
+// Clicking the tag: show the values when they are known, otherwise offer the only
+// thing that can fix it.
+function schemaOpenCodeSet(nodeId) {
+    const node = SchemaViewer.nodes.get(nodeId);
+    if (!node) return;
+    if ((node.enumCodes || []).length) {
+        schemaToggleNode(nodeId, true);
+        const element = document.getElementById(nodeId);
+        const children = element ? schemaChildrenContainer(element) : null;
+        if (children && children.scrollIntoView) children.scrollIntoView({ block: 'nearest' });
+        return;
+    }
+    const name = (node.typeInfo && node.typeInfo.datatypeName) || '';
+    if (!MDR.externalCodeSets.loaded) { pickExternalCodesFile(); return; }
+    showConfirm({
+        icon: '\u2139',
+        title: `Sin valores para ${name || 'este set'}`,
+        message: 'El MDR no publica los valores de este CodeSet y el catálogo de códigos externos cargado '
+            + `(${externalCodesSourceLabel()}) no incluye este set. Puede que pertenezca a otra publicación de ISO 20022.`,
+        confirmLabel: 'Entendido',
+        cancelLabel: 'Cerrar'
+    });
+}
+
 function schemaRenderNode(node) {
     const attrs = `id="${node.id}" data-depth="${Math.max(node.depth, 0)}" data-required="${node.required}" data-or="${node.isOr}"`;
 
@@ -7930,7 +8279,7 @@ function schemaRenderNode(node) {
 
     if (!node.expandable) {
         return `<div class="sch-node" ${attrs}>
-            <div class="sch-row">${schemaKeyHtml(node)}<span class="sch-type" title="${escapeHtml(schemaTypeTooltip(node))}">${escapeHtml(node.typeInfo.label)}</span>${schemaBadgesHtml(node)}</div>
+            <div class="sch-row">${schemaKeyHtml(node)}<span class="sch-type" title="${escapeHtml(schemaTypeTooltip(node))}">${escapeHtml(node.typeInfo.label)}</span>${schemaCodeSetTagHtml(node)}${schemaBadgesHtml(node)}</div>
         </div>`;
     }
 
@@ -7943,7 +8292,7 @@ function schemaRenderNode(node) {
         ? `<span class="sch-type" title="${escapeHtml(schemaTypeTooltip(node))}">${escapeHtml(node.typeInfo.label)}</span>`
         : '';
     return `<div class="sch-node" ${attrs}>
-        <div class="sch-row">${schemaKeyHtml(node)}${leadType}${schemaBadgesHtml(node)}</div>
+        <div class="sch-row">${schemaKeyHtml(node)}${leadType}${isEnum ? schemaCodeSetTagHtml(node) : ''}${schemaBadgesHtml(node)}</div>
         ${schemaOpenLineHtml(node, openBrace, count, isEnum)}
         <div class="sch-children" data-loaded="false"></div>
         <div class="sch-close"><span class="sch-brace">${closeBrace}</span></div>
@@ -8165,7 +8514,7 @@ function schemaToggleOnlyMatches() {
 // Wraps the matching text in <mark> inside the parts a user actually reads: the
 // key, the XML tag and the type label. The original markup is stashed on the
 // node so clearing the search restores it exactly.
-const SCHEMA_HIGHLIGHT_TARGETS = '.sch-key-long, .sch-key-tag, .sch-type';
+const SCHEMA_HIGHLIGHT_TARGETS = '.sch-key-long, .sch-key-tag, .sch-type, .sch-codeset-name';
 
 function schemaClearHighlight(root) {
     root.querySelectorAll('[data-hl-orig]').forEach(node => {
@@ -8309,6 +8658,7 @@ function schemaResetSession(msgId) {
     SchemaViewer.nodes = new Map();
     SchemaViewer.nextId = 1;
     SchemaViewer.msgId = msgId;
+    SchemaViewer.blockRef = '';
     SchemaViewer.matches = [];
     SchemaViewer.matchIndex = -1;
     schemaHideTip();
@@ -8325,6 +8675,17 @@ function openMessageSchema(msgId) {
     schemaShow();
 }
 
+// Rebuilds the open schema from scratch, which is what makes newly available code
+// values appear without the user closing and reopening it.
+function schemaReopen() {
+    if (!SchemaViewer.msgId) return;
+    if (SchemaViewer.scope === 'block' && SchemaViewer.blockRef) {
+        openBlockSchema(SchemaViewer.msgId, SchemaViewer.blockRef);
+        return;
+    }
+    openMessageSchema(SchemaViewer.msgId);
+}
+
 function openBlockSchema(msgId, blockRef) {
     const msg = MDR.messages[msgId];
     if (!msg) return;
@@ -8334,6 +8695,8 @@ function openBlockSchema(msgId, blockRef) {
     block = ensureCanonicalBlockElements(msgId, block) || block;
     schemaResetSession(msgId);
     SchemaViewer.scope = 'block';
+    // Remembered so the same view can be rebuilt when the code values arrive.
+    SchemaViewer.blockRef = blockRef;
     SchemaViewer.title = `${block.name} <${block.tag}>`;
     SchemaViewer.subtitle = `${msgId} \u00b7 estructura ${block.section || 'referenciada'} y todos sus anidamientos. Pasa el cursor sobre un campo para ver su definición en español.`;
     SchemaViewer.root = schemaBuildBlockRoot(msgId, block);
