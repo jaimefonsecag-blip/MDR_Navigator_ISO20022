@@ -695,7 +695,17 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 .sch-head-titles { min-width:0; }
 .sch-head h3 { font-size:1rem; color:var(--accent); display:flex; align-items:center; gap:0.5rem; }
 .sch-head .sch-sub { margin-top:0.15rem; font-size:0.76rem; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.sch-head-actions { display:inline-flex; align-items:center; gap:0.4rem; flex:0 0 auto; }
+.sch-head-actions { display:inline-flex; align-items:center; gap:0.6rem; flex:0 0 auto; }
+/* The code-set viewer carries its own translate action in the header, next to the
+   close button, so it is always in sight regardless of the toolbar width. */
+.btn-cs-translate {
+  padding:0.42rem 0.85rem; font:inherit; font-size:0.8rem; font-weight:700; white-space:nowrap; cursor:pointer;
+  color:var(--on-accent); background:var(--accent-gradient); border:0; border-radius:99px;
+  box-shadow:var(--shadow-sm); transition:transform 0.15s var(--ease-out), box-shadow 0.2s var(--ease), filter 0.15s var(--ease);
+}
+.btn-cs-translate:hover { transform:translateY(-1px); box-shadow:var(--shadow-md); }
+.btn-cs-translate.active { background:var(--bg-secondary); color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+.btn-cs-translate[disabled] { opacity:0.6; cursor:default; transform:none; box-shadow:var(--shadow-sm); }
 
 /* Tabs */
 /* Toolbar */
@@ -721,6 +731,8 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 /* The value table fills the width and its header stays put while scrolling. */
 .cs-body .code-table { width:100%; }
 .cs-body .code-table thead th { position:sticky; top:0; z-index:1; background:var(--bg-secondary); }
+/* A definition shown in Spanish, so it reads as translated and not as source. */
+.cs-code-def.is-translated { color:var(--text-primary); }
 .sch-pane { flex:1; min-height:0; overflow:auto; padding:1rem 1.2rem 2rem; }
 .sch-tree { font-family:'Cascadia Code','Consolas','SFMono-Regular',monospace; font-size:0.8rem; line-height:1.55; }
 
@@ -1382,6 +1394,8 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
         <p class="sch-sub" id="codeSetSubtitle"></p>
       </div>
       <div class="sch-head-actions">
+        <button type="button" class="btn-cs-translate" id="codeSetTranslateBtn" onclick="toggleCodeSetTranslation()"
+                title="Traduce al español solo la definición de cada código">&#127760; Traducir definiciones</button>
         <button type="button" class="btn-close" onclick="closeCodeSetViewer()" aria-label="Cerrar el set de códigos" title="Cerrar (Esc)">&times;</button>
       </div>
     </header>
@@ -5993,10 +6007,13 @@ function codeTableHtml(codes) {
             obsolete ? `<span class="cs-code-flag">${escapeHtml(code.status)}</span>` : '',
             code.replacedBy ? `<span class="cs-code-repl">reemplazado por ${escapeHtml(code.replacedBy)}</span>` : ''
         ].filter(Boolean).join(' ');
+        // The definition carries its English original in a data attribute so the
+        // code-set viewer can translate that one column on demand and restore it.
+        const definition = escapeHtml(code.definition || '');
         return `<tr class="${obsolete ? 'is-obsolete' : ''}">
             <td><strong>${escapeHtml(code.code)}</strong></td>
             <td>${escapeHtml(code.name || '')}${notes ? `<div class="cs-code-notes">${notes}</div>` : ''}</td>
-            <td>${escapeHtml(code.definition || '')}</td>
+            <td class="cs-code-def" data-en="${definition}">${definition}</td>
         </tr>`;
     }).join('');
     return `<table class="code-table"><thead><tr><th>Código</th><th>Nombre</th><th>Definición</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -7536,7 +7553,9 @@ function showCodeSetForElement(msgId, element) {
 // ===== Code set viewer (overlay) =====
 // The list can be long, so it opens over the page in a wide window with its own
 // search, instead of the narrow side panel.
-const CodeSetViewer = { open: false, codes: [], lastFocus: null };
+// translated is a per-viewer switch, independent of the global "Traducir" button:
+// here only the functional definition of each code is turned into Spanish.
+const CodeSetViewer = { open: false, codes: [], lastFocus: null, translated: false, generation: 0 };
 
 function openCodeSetViewer(codeSet) {
     const overlay = document.getElementById('codeSetOverlay');
@@ -7544,6 +7563,9 @@ function openCodeSetViewer(codeSet) {
     CodeSetViewer.lastFocus = document.activeElement;
     CodeSetViewer.open = true;
     CodeSetViewer.codes = codeSet.codes || [];
+    // Each set opens in the original language; the button decides per viewing.
+    CodeSetViewer.translated = false;
+    CodeSetViewer.generation++;
 
     document.getElementById('codeSetTitleText').textContent = codeSet.name || 'Set de códigos';
 
@@ -7584,11 +7606,76 @@ function openCodeSetViewer(codeSet) {
     const body = document.getElementById('codeSetBody');
     body.innerHTML = `${notice}${definition}${format}<div id="codeSetTable"></div>`;
     renderCodeSetTable('');
+    updateCodeSetTranslateButton();
 
     overlay.classList.remove('hidden');
-    // The definitions are English prose, so Spanish mode must reach them too.
-    applyTranslationToContainer(body);
     if (search) search.focus();
+}
+
+function updateCodeSetTranslateButton() {
+    const button = document.getElementById('codeSetTranslateBtn');
+    if (!button) return;
+    // The button always shows; without definitions it just says there is nothing
+    // to translate, rather than disappearing (which read as a missing feature).
+    const hasDefs = CodeSetViewer.codes.some(code => code.definition && /[a-zA-Z]/.test(code.definition));
+    button.classList.remove('hidden');
+    button.disabled = !hasDefs;
+    button.classList.toggle('active', CodeSetViewer.translated);
+    button.title = hasDefs
+        ? 'Traduce al español solo la definición de cada código'
+        : 'Este set no tiene definiciones que traducir';
+    button.innerHTML = !hasDefs
+        ? '\uD83C\uDF10 Sin definiciones'
+        : (CodeSetViewer.translated ? '\uD83C\uDF10 Ver original' : '\uD83C\uDF10 Traducir definiciones');
+}
+
+// Translates only the "Definición" column, on demand, without touching the global
+// translation mode. Uses the same translateText() (cached, rate-limit aware) as the
+// rest of the app, so a definition already seen elsewhere costs no request.
+async function toggleCodeSetTranslation() {
+    if (!CodeSetViewer.open) return;
+    CodeSetViewer.translated = !CodeSetViewer.translated;
+    updateCodeSetTranslateButton();
+    if (!CodeSetViewer.translated) { applyCodeSetDefinitionLanguage(); return; }
+
+    const generation = CodeSetViewer.generation;
+    const button = document.getElementById('codeSetTranslateBtn');
+    // Translate the distinct definitions once, then paint. A set repeats wordings
+    // ("No further information", etc.), so de-duplicating saves most of the calls.
+    const unique = [...new Set(CodeSetViewer.codes
+        .map(code => (code.definition || '').trim())
+        .filter(text => text && /[a-zA-Z]/.test(text)))];
+    let done = 0;
+    for (const text of unique) {
+        if (generation !== CodeSetViewer.generation) return; // closed or changed set
+        try {
+            await translateText(text);
+        } catch (error) {
+            // A rate limit stops the batch; what is already cached still applies.
+            break;
+        }
+        done++;
+        if (button && done % 8 === 0) button.innerHTML = `\uD83C\uDF10 Traduciendo… ${done}/${unique.length}`;
+        if (done % 8 === 0) applyCodeSetDefinitionLanguage();
+    }
+    if (generation === CodeSetViewer.generation) {
+        applyCodeSetDefinitionLanguage();
+        updateCodeSetTranslateButton();
+    }
+}
+
+// Swaps each definition cell between its English original (data-en) and the
+// cached Spanish, so switching back and forth never re-queues a request.
+function applyCodeSetDefinitionLanguage() {
+    const body = document.getElementById('codeSetBody');
+    if (!body) return;
+    body.querySelectorAll('.cs-code-def').forEach(cell => {
+        const english = cell.dataset.en || '';
+        if (!CodeSetViewer.translated) { cell.textContent = english; cell.classList.remove('is-translated'); return; }
+        const spanish = MDR.translation.cache.get(english.trim());
+        cell.textContent = spanish || english;
+        cell.classList.toggle('is-translated', Boolean(spanish));
+    });
 }
 
 // The rows, filtered by the search box. Reuses codeTableHtml so the obsolete
@@ -7615,7 +7702,9 @@ function renderCodeSetTable(query) {
     holder.innerHTML = codes.length
         ? codeTableHtml(codes)
         : '<p class="empty-msg">Ningún código coincide con la búsqueda.</p>';
-    if (MDR.translation.enabled) applyTranslationToContainer(holder);
+    // Filtering re-renders the rows in English; if the viewer is in Spanish mode,
+    // reapply the cached translations to the freshly drawn cells.
+    if (CodeSetViewer.translated) applyCodeSetDefinitionLanguage();
 }
 
 function closeCodeSetViewer() {
