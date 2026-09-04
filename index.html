@@ -687,6 +687,8 @@ body.theme-light {
 
 /* Overlay + modal */
 .sch-overlay { position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:1.6rem; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); animation:schFade 0.16s ease-out; }
+/* The code-set viewer can be opened from within the schema, so it sits above it. */
+#codeSetOverlay { z-index:210; }
 body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 @keyframes schFade { from { opacity:0; } to { opacity:1; } }
 .sch-modal { display:flex; flex-direction:column; width:min(1240px,97vw); height:min(900px,94vh); background:var(--bg-primary); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:0 26px 80px rgba(0,0,0,0.55); animation:schRise 0.2s ease-out; }
@@ -1469,7 +1471,7 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
               data-legend-tip="Colección repetible: el campo admite más de una ocurrencia, por ejemplo [1..n] o [0..*]. En JSON se representa como array."
               aria-label="array: colección repetible, el campo admite más de una ocurrencia">array</span>
         <span class="sch-codeset sch-legend-item" tabindex="0"
-              data-legend-tip="Set de códigos al que apunta el campo. Con valores disponibles, al pulsarlo se despliegan dentro del propio esquema; si el MDR no los publica (CodeSet externo de ISO), la etiqueta queda en ámbar."
+              data-legend-tip="Set de códigos al que apunta el campo. Al pulsarlo se abren sus valores en una ventana con buscador y traducción; si el MDR no los publica (CodeSet externo de ISO), la etiqueta queda en ámbar."
               aria-label="Set de códigos al que apunta el campo: al pulsarlo se despliegan sus valores">
             <span class="sch-codeset-label" aria-hidden="true">set</span>
             <span class="sch-codeset-name">ExternalPurpose1Code</span>
@@ -8535,13 +8537,13 @@ function schemaCodeSetTagHtml(node) {
     const pending = !total;
     const label = total ? `${total} códigos` : 'sin valores';
     const title = total
-        ? `Set de códigos ${name}: ${total} valores. Pulsa para verlos aquí mismo.`
+        ? `Set de códigos ${name}: ${total} valores. Pulsa para abrirlos en una ventana con buscador.`
         : `Set de códigos ${name}. El MDR no publica sus valores; ISO los distribuye aparte.`
             + (MDR.externalCodeSets.loaded
                 ? ' El catálogo cargado no incluye este set.'
                 : ' Pulsa para cargar el catálogo de códigos externos.');
     return `<span class="sch-codeset${pending ? ' is-pending' : ''}" role="button" tabindex="0"
-            title="${escapeHtml(title)}" onclick="schemaOpenCodeSet('${node.id}');event.stopPropagation()"
+            title="${escapeHtml(title)}" aria-haspopup="dialog" onclick="schemaOpenCodeSet('${node.id}');event.stopPropagation()"
             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();schemaOpenCodeSet('${node.id}')}">
         <span class="sch-codeset-label" aria-hidden="true">set</span>
         <span class="sch-codeset-name">${escapeHtml(name)}</span>
@@ -8554,23 +8556,26 @@ function schemaCodeSetTagHtml(node) {
 function schemaOpenCodeSet(nodeId) {
     const node = SchemaViewer.nodes.get(nodeId);
     if (!node) return;
+    const info = node.typeInfo || {};
+    const name = info.datatypeName || (node.element && node.element.codeSetName) || '';
+    // Open the values in the dedicated window (searchable, translatable) rather than
+    // expanding them below the field inside the tree.
     if ((node.enumCodes || []).length) {
-        schemaToggleNode(nodeId, true);
-        const element = document.getElementById(nodeId);
-        const children = element ? schemaChildrenContainer(element) : null;
-        if (children && children.scrollIntoView) children.scrollIntoView({ block: 'nearest' });
+        openCodeSetViewer({
+            name: name || 'Set de códigos',
+            codes: node.enumCodes,
+            external: Boolean(info.external),
+            fromExternalFile: Boolean(info.codeSet && info.codeSet.fromExternalFile),
+            externalPublication: (info.codeSet && info.codeSet.externalPublication)
+                || MDR.externalCodeSets.publication || '',
+            definition: (info.codeSet && info.codeSet.definition) || '',
+            format: (info.codeSet && info.codeSet.format) || {}
+        });
         return;
     }
-    const name = (node.typeInfo && node.typeInfo.datatypeName) || '';
+    // No values: the external workbook holds them. Ask for it, or explain its absence.
     if (!MDR.externalCodeSets.loaded) { pickExternalCodesFile(); return; }
-    showConfirm({
-        icon: '\u2139',
-        title: `Sin valores para ${name || 'este set'}`,
-        message: 'El MDR no publica los valores de este CodeSet y el catálogo de códigos externos cargado '
-            + `(${externalCodesSourceLabel()}) no incluye este set. Puede que pertenezca a otra publicación de ISO 20022.`,
-        confirmLabel: 'Entendido',
-        cancelLabel: 'Cerrar'
-    });
+    openCodeSetViewer({ name: name || 'Set de códigos', external: true, codes: [] });
 }
 
 function schemaRenderNode(node) {
@@ -9056,8 +9061,9 @@ function closeSchemaViewer() {
 }
 
 document.addEventListener('keydown', event => {
-    // The confirmation dialog sits on top and owns Escape while it is open.
-    if (event.key !== 'Escape' || !SchemaViewer.open || confirmDialogIsOpen()) return;
+    // The confirmation dialog and the code-set viewer sit on top and own Escape
+    // while they are open, so the schema does not close underneath them.
+    if (event.key !== 'Escape' || !SchemaViewer.open || confirmDialogIsOpen() || CodeSetViewer.open) return;
     const search = document.getElementById('schemaSearch');
     if (search && document.activeElement === search && search.value) {
         search.value = '';
