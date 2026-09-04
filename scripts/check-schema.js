@@ -195,6 +195,17 @@ expect('al llegar el catalogo se reconstruye el esquema abierto',
 expect('reconstruye tambien la vista de un building block',
     /SchemaViewer\.blockRef = blockRef;/.test(script), true);
 
+// The values open in the dedicated window, not expanded below the field in the tree.
+const openTagBlock = script.slice(
+    script.indexOf('function schemaOpenCodeSet'),
+    script.indexOf('function schemaRenderNode'));
+expect('la etiqueta abre la ventana de codigos, no despliega en el arbol',
+    openTagBlock.includes('openCodeSetViewer(') && !openTagBlock.includes('schemaToggleNode('), true);
+expect('la ventana de codigos queda por encima del esquema abierto',
+    /#codeSetOverlay \{ z-index:210/.test(html), true);
+expect('con el set abierto, Escape no cierra el esquema por debajo',
+    /!SchemaViewer\.open \|\| confirmDialogIsOpen\(\) \|\| CodeSetViewer\.open/.test(script), true);
+
 // ===== hovering a single code =====
 // The definition of a value comes from column D of the ISO workbook (or from the
 // MDR for an internal CodeSet) and is shown translated.
