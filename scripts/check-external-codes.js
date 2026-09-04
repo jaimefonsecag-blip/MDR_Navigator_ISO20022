@@ -239,5 +239,34 @@ expect('los valores del Excel no se confunden con los del MDR',
 expect('la tabla de codigos marca los retirados',
     body('codeTableHtml').includes('is-obsolete') && body('codeTableHtml').includes('replacedBy'));
 
+console.log('\n=== se abre en una ventana, no en el panel lateral ===');
+const markup2 = html.slice(0, html.indexOf('<script>\n// ==='));
+expect('existe el overlay del set de codigos',
+    /id="codeSetOverlay"/.test(markup2) && /id="codeSetBody"/.test(markup2)
+    && /id="codeSetSearch"/.test(markup2));
+expect('showCodeSet abre la ventana y no el panel lateral',
+    body('showCodeSet').includes('openCodeSetViewer(')
+    && !body('showCodeSet').includes('openDetailPanel('));
+expect('el campo sin CodeSet resuelto tambien abre la ventana',
+    body('showCodeSetForElement').includes('openCodeSetViewer(')
+    && !body('showCodeSetForElement').includes('openDetailPanel('));
+expect('la ventana tiene su propio buscador de codigos',
+    body('openCodeSetViewer').includes('renderCodeSetTable')
+    && body('renderCodeSetTable').includes('normalizeBlockSearch'));
+expect('el buscador filtra por codigo, nombre y definicion',
+    body('renderCodeSetTable').includes('code.code') && body('renderCodeSetTable').includes('code.name')
+    && body('renderCodeSetTable').includes('code.definition'));
+expect('la ventana reutiliza la tabla comun (retirados y reemplazos)',
+    body('renderCodeSetTable').includes('codeTableHtml('));
+expect('la ventana traduce las definiciones al espanol',
+    body('openCodeSetViewer').includes('applyTranslationToContainer('));
+expect('se puede cerrar con Escape y con clic en el fondo',
+    /!CodeSetViewer\.open/.test(script)
+    && /closeCodeSetViewer\(\);/.test(script)
+    && /id === 'codeSetOverlay'\) closeCodeSetViewer/.test(script));
+expect('los otros detalles (elemento, constraint) siguen en el panel lateral',
+    body('showConstraint').includes('openDetailPanel(')
+    && body('showElementDetail').includes('openDetailPanel('));
+
 console.log(failures ? `\n${failures} prueba(s) fallida(s)` : '\ntodas las pruebas de codigos externos pasaron');
 process.exit(failures ? 1 : 0);
