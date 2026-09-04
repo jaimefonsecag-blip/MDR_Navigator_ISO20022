@@ -258,8 +258,34 @@ expect('el buscador filtra por codigo, nombre y definicion',
     && body('renderCodeSetTable').includes('code.definition'));
 expect('la ventana reutiliza la tabla comun (retirados y reemplazos)',
     body('renderCodeSetTable').includes('codeTableHtml('));
-expect('la ventana traduce las definiciones al espanol',
-    body('openCodeSetViewer').includes('applyTranslationToContainer('));
+console.log('\n=== boton propio: traduce solo la definicion ===');
+const markup3 = html.slice(0, html.indexOf('<script>\n// ==='));
+expect('la ventana tiene su boton de traducir',
+    /id="codeSetTranslateBtn"[^>]*onclick="toggleCodeSetTranslation\(\)"/.test(markup3));
+expect('el boton traduce solo la definicion, no toca el modo global',
+    body('toggleCodeSetTranslation').includes('translateText(')
+    && !body('toggleCodeSetTranslation').includes('toggleTranslation')
+    && !body('toggleCodeSetTranslation').includes('state.enabled'));
+expect('la celda de definicion guarda su original en ingles',
+    body('codeTableHtml').includes('class="cs-code-def" data-en='));
+expect('cambiar de idioma usa la cache, no vuelve a pedir',
+    body('applyCodeSetDefinitionLanguage').includes('MDR.translation.cache.get')
+    && body('applyCodeSetDefinitionLanguage').includes('dataset.en'));
+expect('de-duplica las definiciones antes de traducir',
+    body('toggleCodeSetTranslation').includes('new Set('));
+expect('un limite de la API corta el lote sin romper',
+    /catch[\s\S]*?break;/.test(body('toggleCodeSetTranslation')));
+expect('cada set abre en su idioma original',
+    body('openCodeSetViewer').includes('CodeSetViewer.translated = false'));
+expect('filtrar mantiene el idioma elegido',
+    body('renderCodeSetTable').includes('applyCodeSetDefinitionLanguage'));
+expect('el boton vive en el encabezado, siempre a la vista',
+    /class="sch-head-actions"[\s\S]{0,200}id="codeSetTranslateBtn"/.test(markup3));
+expect('sin definiciones el boton se desactiva pero no desaparece',
+    body('updateCodeSetTranslateButton').includes("button.classList.remove('hidden')")
+    && body('updateCodeSetTranslateButton').includes('button.disabled = !hasDefs'));
+expect('cerrar o cambiar de set cancela una traduccion en curso',
+    body('toggleCodeSetTranslation').includes('CodeSetViewer.generation'));
 expect('se puede cerrar con Escape y con clic en el fondo',
     /!CodeSetViewer\.open/.test(script)
     && /closeCodeSetViewer\(\);/.test(script)
