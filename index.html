@@ -712,6 +712,15 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 
 /* Body */
 .sch-body { flex:1; min-height:0; display:flex; flex-direction:column; }
+/* Code set viewer: a narrower window than the schema one and a scrolling body. */
+.cs-modal { width:min(880px,96vw); height:min(760px,92vh); }
+.cs-body { display:block; overflow:auto; padding:1rem 1.2rem 1.6rem; }
+.cs-viewer-def { margin:0 0 0.8rem; font-size:0.9rem; line-height:1.6; color:var(--text-secondary); }
+.cs-body .cs-external { margin-bottom:0.9rem; }
+.cs-body .cs-format { margin-bottom:0.9rem; }
+/* The value table fills the width and its header stays put while scrolling. */
+.cs-body .code-table { width:100%; }
+.cs-body .code-table thead th { position:sticky; top:0; z-index:1; background:var(--bg-secondary); }
 .sch-pane { flex:1; min-height:0; overflow:auto; padding:1rem 1.2rem 2rem; }
 .sch-tree { font-family:'Cascadia Code','Consolas','SFMono-Regular',monospace; font-size:0.8rem; line-height:1.55; }
 
@@ -1361,6 +1370,28 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
      outside both screens so a programmatic click always opens the picker. -->
 <input type="file" id="fileInputExternalCodes" class="input-offscreen" accept=".xlsx,.xls"
        tabindex="-1" aria-hidden="true" aria-label="Cargar el Excel de códigos externos ISO 20022" />
+
+<!-- CODE SET VIEWER (overlay) -->
+<!-- A code set can hold hundreds of values, so it opens over the page in a wide
+     window with its own search instead of the narrow side panel. -->
+<div id="codeSetOverlay" class="sch-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="codeSetTitle">
+  <div class="sch-modal cs-modal" role="document">
+    <header class="sch-head">
+      <div class="sch-head-titles">
+        <h3 id="codeSetTitle"><span class="btn-schema-braces">{ }</span> <span id="codeSetTitleText">Set de códigos</span></h3>
+        <p class="sch-sub" id="codeSetSubtitle"></p>
+      </div>
+      <div class="sch-head-actions">
+        <button type="button" class="btn-close" onclick="closeCodeSetViewer()" aria-label="Cerrar el set de códigos" title="Cerrar (Esc)">&times;</button>
+      </div>
+    </header>
+    <div class="sch-toolbar">
+      <input type="search" id="codeSetSearch" class="sch-search" placeholder="Buscar código, nombre o definición..." aria-label="Buscar en el set de códigos" autocomplete="off" />
+      <span class="sch-status" id="codeSetCount"></span>
+    </div>
+    <div class="sch-body cs-body" id="codeSetBody"></div>
+  </div>
+</div>
 
 <!-- JSON SCHEMA VIEWER (in-app overlay page) -->
 <div id="schemaOverlay" class="sch-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="schemaTitle">
@@ -7480,42 +7511,7 @@ function showCodeSet(msgId, csName) {
         ? known
         : (externalCodeSetFor(csName) ? { ...(known || {}), ...externalCodeSetFor(csName) } : known);
     if (!codeSet) return;
-
-    openDetailPanel();
-    $detailTitle.textContent = csName;
-    let html = '';
-    if (codeSet.definition) {
-        html += `<div class="detail-section"><h4>Definición</h4><p class="definition-text">${codeSet.definition}</p></div>`;
-    }
-    html += `<div class="detail-section"><h4>Fuente MDR</h4><p>${codeSet.section ? `Sección ${codeSet.section} · ` : ''}${codeSet.page ? `Página ${codeSet.page}` : 'Página no resuelta'}</p></div>`;
-    const formatEntries = Object.entries(codeSet.format || {});
-    if (formatEntries.length) {
-        html += `<div class="detail-section"><h4>Formato</h4><div class="cs-format">`;
-        formatEntries.forEach(([name, value]) => {
-            html += `<span class="cs-format-item">${name}: ${value}</span>`;
-        });
-        html += `</div></div>`;
-    }
-    if (codeSet.fromExternalFile) {
-        html += `<div class="cs-external is-resolved">CodeSet externo: el MDR no incluye sus valores, así que
-            estos vienen del catálogo de códigos externos de ISO 20022.
-            <span class="cs-external-source">${escapeHtml(externalCodesSourceLabel())}</span></div>`;
-    } else if (codeSet.external) {
-        html += `<div class="cs-external">Este es un CodeSet externo. La lista de valores válidos se publica separadamente por ISO 20022 y no está incluida en el MDR.
-            ${MDR.externalCodeSets.loaded
-                ? 'El Excel cargado no trae este code set.'
-                : `<button type="button" class="btn-load-codes" onclick="pickExternalCodesFile()">Cargar el Excel de códigos externos</button>`}</div>`;
-    } else if (codeSet.unresolved) {
-        html += `<div class="cs-external">La fila está marcada como CodeSet, pero no fue posible resolver su datatype en las páginas referenciadas del MDR.</div>`;
-    }
-    if (codeSet.codes.length) {
-        html += `<div class="detail-section"><h4>Códigos (${codeSet.codes.length})</h4>`;
-        html += codeTableHtml(codeSet.codes);
-        html += `</div>`;
-    } else if (!codeSet.external && !codeSet.unresolved) {
-        html += `<p class="empty-msg">El MDR no contiene valores enumerados para este CodeSet.</p>`;
-    }
-    renderDetailContent(html);
+    openCodeSetViewer({ ...codeSet, name: codeSet.name || csName });
 }
 
 function showCodeSetForElement(msgId, element) {
@@ -7527,20 +7523,108 @@ function showCodeSetForElement(msgId, element) {
     }
     // The MDR did not resolve the set, but ISO publishes it by that same name.
     const external = externalCodeSetFor(element.codeSetName) || externalCodeSetFor(element.datatypeName);
-    if (external) {
-        openDetailPanel();
-        $detailTitle.textContent = external.name;
-        renderDetailContent(`<div class="cs-external is-resolved">CodeSet externo: el MDR no incluye sus valores,
-            así que estos vienen del Excel de códigos externos de ISO 20022${
-            external.externalPublication ? ` (publicación ${escapeHtml(external.externalPublication)})` : ''}.</div>
-            <div class="detail-section"><h4>Códigos (${external.codes.length})</h4>${codeTableHtml(external.codes)}</div>`);
-        return;
+    if (external) { openCodeSetViewer(external); return; }
+    // Nothing resolved: a small window still explains why and offers the workbook.
+    openCodeSetViewer({
+        name: element.codeSetName || `${element.name} CodeSet`,
+        unresolved: true,
+        refPage: element.refPage || '',
+        codes: []
+    });
+}
+
+// ===== Code set viewer (overlay) =====
+// The list can be long, so it opens over the page in a wide window with its own
+// search, instead of the narrow side panel.
+const CodeSetViewer = { open: false, codes: [], lastFocus: null };
+
+function openCodeSetViewer(codeSet) {
+    const overlay = document.getElementById('codeSetOverlay');
+    if (!overlay || !codeSet) return;
+    CodeSetViewer.lastFocus = document.activeElement;
+    CodeSetViewer.open = true;
+    CodeSetViewer.codes = codeSet.codes || [];
+
+    document.getElementById('codeSetTitleText').textContent = codeSet.name || 'Set de códigos';
+
+    // Where the values come from, said once at the top.
+    const origin = codeSet.fromExternalFile
+        ? `Catálogo de códigos externos de ISO 20022${codeSet.externalPublication ? ` · publicación ${codeSet.externalPublication}` : ''}`
+        : (codeSet.external
+            ? 'CodeSet externo: sus valores se publican aparte del MDR'
+            : (codeSet.section || codeSet.page
+                ? `MDR${codeSet.section ? ` · sección ${codeSet.section}` : ''}${codeSet.page ? ` · página ${codeSet.page}` : ''}`
+                : ''));
+    document.getElementById('codeSetSubtitle').textContent = origin;
+
+    const search = document.getElementById('codeSetSearch');
+    if (search) search.value = '';
+
+    let notice = '';
+    if (codeSet.fromExternalFile) {
+        notice = `<div class="cs-external is-resolved">Valores tomados del catálogo de códigos externos de ISO 20022, porque el MDR no los incluye. <span class="cs-external-source">${escapeHtml(externalCodesSourceLabel())}</span></div>`;
+    } else if (codeSet.external && !CodeSetViewer.codes.length) {
+        notice = `<div class="cs-external">CodeSet externo: sus valores se publican aparte del MDR.
+            ${MDR.externalCodeSets.loaded
+                ? 'El catálogo cargado no incluye este set.'
+                : '<button type="button" class="btn-load-codes" onclick="pickExternalCodesFile()">Cargar el catálogo de códigos externos</button>'}</div>`;
+    } else if (codeSet.unresolved) {
+        notice = `<div class="cs-external">No fue posible resolver este CodeSet en las páginas referenciadas del MDR${codeSet.refPage ? ` (p.${escapeHtml(String(codeSet.refPage))})` : ''}.
+            ${MDR.externalCodeSets.loaded ? '' : '<button type="button" class="btn-load-codes" onclick="pickExternalCodesFile()">Cargar el catálogo de códigos externos</button>'}</div>`;
     }
 
-    openDetailPanel();
-    $detailTitle.textContent = `${element.name} CodeSet`;
-    renderDetailContent(`<div class="cs-external">No fue posible resolver el CodeSet desde la página de detalle ${element.refPage || 'no indicada'}.
-        ${MDR.externalCodeSets.loaded ? '' : `<button type="button" class="btn-load-codes" onclick="pickExternalCodesFile()">Cargar el Excel de códigos externos</button>`}</div>`);
+    const definition = codeSet.definition
+        ? `<p class="cs-viewer-def definition-text">${escapeHtml(codeSet.definition)}</p>`
+        : '';
+    const formatEntries = Object.entries(codeSet.format || {});
+    const format = formatEntries.length
+        ? `<div class="cs-format">${formatEntries.map(([name, value]) => `<span class="cs-format-item">${escapeHtml(name)}: ${escapeHtml(String(value))}</span>`).join('')}</div>`
+        : '';
+
+    const body = document.getElementById('codeSetBody');
+    body.innerHTML = `${notice}${definition}${format}<div id="codeSetTable"></div>`;
+    renderCodeSetTable('');
+
+    overlay.classList.remove('hidden');
+    // The definitions are English prose, so Spanish mode must reach them too.
+    applyTranslationToContainer(body);
+    if (search) search.focus();
+}
+
+// The rows, filtered by the search box. Reuses codeTableHtml so the obsolete
+// styling and the replaced-by note are the same as everywhere else.
+function renderCodeSetTable(query) {
+    const holder = document.getElementById('codeSetTable');
+    const count = document.getElementById('codeSetCount');
+    if (!holder) return;
+    const terms = normalizeBlockSearch(query).split(/\s+/).filter(Boolean);
+    const codes = CodeSetViewer.codes.filter(code => {
+        if (!terms.length) return true;
+        const haystack = normalizeBlockSearch([code.code, code.name, code.definition].join(' '));
+        return terms.every(term => haystack.includes(term));
+    });
+    if (count) {
+        count.textContent = terms.length
+            ? `${codes.length} de ${CodeSetViewer.codes.length} códigos`
+            : `${CodeSetViewer.codes.length} código${CodeSetViewer.codes.length === 1 ? '' : 's'}`;
+    }
+    if (!CodeSetViewer.codes.length) {
+        holder.innerHTML = '<p class="empty-msg">Este set no tiene valores para mostrar.</p>';
+        return;
+    }
+    holder.innerHTML = codes.length
+        ? codeTableHtml(codes)
+        : '<p class="empty-msg">Ningún código coincide con la búsqueda.</p>';
+    if (MDR.translation.enabled) applyTranslationToContainer(holder);
+}
+
+function closeCodeSetViewer() {
+    const overlay = document.getElementById('codeSetOverlay');
+    if (!overlay) return;
+    overlay.classList.add('hidden');
+    CodeSetViewer.open = false;
+    CodeSetViewer.codes = [];
+    if (CodeSetViewer.lastFocus && CodeSetViewer.lastFocus.focus) CodeSetViewer.lastFocus.focus();
 }
 
 function findCodeSetForElementByKey(detailKey) {
@@ -8896,6 +8980,23 @@ document.addEventListener('keydown', event => {
 
 document.getElementById('schemaOverlay').addEventListener('click', event => {
     if (event.target && event.target.id === 'schemaOverlay') closeSchemaViewer();
+});
+
+// Code set viewer: same interactions as the schema one (click the backdrop, Esc,
+// live search), so they behave alike.
+document.getElementById('codeSetOverlay').addEventListener('click', event => {
+    if (event.target && event.target.id === 'codeSetOverlay') closeCodeSetViewer();
+});
+document.getElementById('codeSetSearch').addEventListener('input', event => renderCodeSetTable(event.target.value));
+document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !CodeSetViewer.open || confirmDialogIsOpen()) return;
+    const search = document.getElementById('codeSetSearch');
+    if (search && document.activeElement === search && search.value) {
+        search.value = '';
+        renderCodeSetTable('');
+        return;
+    }
+    closeCodeSetViewer();
 });
 
 document.getElementById('schemaSearch').addEventListener('input', schemaSearchChanged);
