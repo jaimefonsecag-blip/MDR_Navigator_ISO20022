@@ -705,9 +705,14 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 .sch-cons { color:var(--sch-cons); background:var(--sch-cons-bg); cursor:help; }
 .sch-recursive { color:var(--sch-arr); background:var(--sch-arr-bg); }
 .sch-note { color:var(--text-dim); font-size:0.72rem; font-style:italic; padding:0.1rem 0.3rem; }
-.sch-enum-code { display:flex; gap:0.5rem; padding:0.05rem 0.3rem; }
+/* Each value is hoverable: the card explains what it means, in Spanish. */
+.sch-enum-code { display:flex; align-items:baseline; gap:0.5rem; padding:0.05rem 0.3rem; border-radius:4px; cursor:help; }
+.sch-enum-code:hover, .sch-enum-code:focus-visible { background:var(--sch-row-hover); outline:none; }
 .sch-enum-code code { color:var(--sch-type); }
 .sch-enum-code span { color:var(--text-dim); font-family:'Segoe UI',system-ui,sans-serif; font-size:0.72rem; }
+/* A value ISO retired must not look usable. */
+.sch-enum-code.is-obsolete code { text-decoration:line-through; opacity:0.7; }
+.sch-enum-flag { color:var(--warning) !important; font-size:0.62rem !important; font-weight:800; text-transform:uppercase; letter-spacing:0.3px; }
 
 /* Name mode + filters driven by container classes (no re-render needed) */
 .sch-key-tag { display:none; }
@@ -3479,7 +3484,7 @@ function openPart1Section(sectionId) {
                 // travels with it in the parent's list too.
                 const note = part1ConceptNote(child);
                 return `<div class="p1-role" style="cursor:pointer" onclick="openPart1Section('${child.id}')">
-                <div class="p1-role-name">${escapeHtml(child.number ? `${child.number}. ` : '')}${escapeHtml(child.title)}</div>
+                <div class="p1-role-name"><span class="p1-child-number">${escapeHtml(child.number ? `${child.number}. ` : '')}</span><span class="p1-child-name">${escapeHtml(child.title)}</span></div>
                 ${note ? `<div class="p1-concept-hint">${escapeHtml(note.short)}</div>` : ''}
            </div>`;
            }).join('')}</div>`
@@ -3506,7 +3511,7 @@ function openPart1Section(sectionId) {
     partPanel(1).innerHTML = `
         <div class="p1-head">
             <span class="p1-eyebrow">${escapeHtml(section.number || 'Parte 1')} &middot; nivel ${section.level}</span>
-            <h2>${escapeHtml(section.title)}</h2>
+            <h2 class="p1-section-title">${escapeHtml(section.title)}</h2>
         </div>
         ${position >= 0 ? `<div class="p1-progress">
             <div class="p1-progress-track"><div class="p1-progress-bar" style="width:${percent}%"></div></div>
@@ -5075,6 +5080,13 @@ const TRANSLATABLE_SELECTORS = [
     // the technical view. Only the label: the route holds actor names.
     '.p1-step-title',
     '.bc-steps li strong',
+    // The content panel of the Word: the heading of the open section, the titles in
+    // its index and the cards of its subsections. The column "Rol" is written by the
+    // navigator, so it stays out.
+    '.p1-section-title',
+    '#p1Tree .bb-name',
+    '.p1-child-name',
+    '.p1-table thead th:not(.p1-role-col)',
     '.ref-constraint-text',
     '.constraint-rule-text',
     '.constraint-summary',
@@ -8094,43 +8106,42 @@ function schemaHideTip() {
     SchemaTip.generation++;
 }
 
-function schemaShowTip(node, x, y) {
+// Shared by the field card and the code card: the metadata paints at once and the
+// Spanish definition replaces the placeholder when it arrives. Debounced, so
+// sweeping the pointer across the tree costs no requests.
+function schemaTipShow(tipId, definition, render, x, y, onTranslated) {
     const card = document.getElementById('schemaTooltip');
-    if (!card || !node) return;
-    const sameNode = SchemaTip.nodeId === node.id;
-    SchemaTip.nodeId = node.id;
-
-    if (sameNode && !card.classList.contains('hidden')) {
+    if (!card) return;
+    const same = SchemaTip.nodeId === tipId;
+    SchemaTip.nodeId = tipId;
+    if (same && !card.classList.contains('hidden')) {
         schemaTipPosition(card, x, y);
         return;
     }
     if (SchemaTip.timer) { clearTimeout(SchemaTip.timer); SchemaTip.timer = null; }
     const generation = ++SchemaTip.generation;
+    const clean = String(definition || '').trim();
 
-    // Metadata and any translation already resolved render immediately.
-    if (!node.definition) {
-        card.innerHTML = schemaTipHtml(node, 'empty', '');
-    } else if (node.definitionEs) {
-        card.innerHTML = schemaTipHtml(node, 'done', node.definitionEs);
+    if (!clean) {
+        card.innerHTML = render('empty', '');
     } else {
-        const cached = MDR.translation.cache.get(node.definition.trim());
+        const cached = MDR.translation.cache.get(clean);
         if (cached) {
-            node.definitionEs = cached;
-            card.innerHTML = schemaTipHtml(node, 'done', cached);
+            if (onTranslated) onTranslated(cached);
+            card.innerHTML = render('done', cached);
         } else {
-            card.innerHTML = schemaTipHtml(node, 'pending', '');
-            // Debounced so sweeping the pointer over the tree costs no requests.
+            card.innerHTML = render('pending', '');
             SchemaTip.timer = setTimeout(() => {
-                translateText(node.definition)
+                translateText(clean)
                     .then(translated => {
-                        node.definitionEs = translated;
+                        if (onTranslated) onTranslated(translated);
                         if (SchemaTip.generation !== generation) return;
-                        card.innerHTML = schemaTipHtml(node, 'done', translated);
+                        card.innerHTML = render('done', translated);
                         schemaTipPosition(card, x, y);
                     })
                     .catch(() => {
                         if (SchemaTip.generation !== generation) return;
-                        card.innerHTML = schemaTipHtml(node, 'failed', '');
+                        card.innerHTML = render('failed', '');
                         schemaTipPosition(card, x, y);
                     });
             }, 180);
@@ -8139,6 +8150,48 @@ function schemaShowTip(node, x, y) {
 
     card.classList.remove('hidden');
     schemaTipPosition(card, x, y);
+}
+
+function schemaShowTip(node, x, y) {
+    if (!node) return;
+    schemaTipShow(node.id, node.definition,
+        (state, text) => schemaTipHtml(node, state, text), x, y,
+        translated => { node.definitionEs = translated; });
+}
+
+// What a single value means. For an external CodeSet the definition is the one ISO
+// publishes in its workbook; for one listed in the MDR, the one the document gives.
+function schemaCodeTipHtml(code, state, text) {
+    const states = {
+        pending: 'Traduciendo la definición…',
+        empty: 'El catálogo no incluye una definición para este código.',
+        failed: 'No se pudo traducir la definición; se muestra el original.'
+    };
+    const body = state === 'done' ? text : states[state];
+    const obsolete = /obsolete|deprecat|withdrawn/i.test(code.status || '');
+    const chips = [
+        code.set ? `<span class="sch-tip-chip">${escapeHtml(code.set)}</span>` : '',
+        code.status ? `<span class="sch-badge ${obsolete ? 'sch-cons' : 'sch-opt'}">${escapeHtml(code.status)}</span>` : '',
+        code.replacedBy ? `<span class="sch-tip-chip">&rarr; ${escapeHtml(code.replacedBy)}</span>` : ''
+    ].filter(Boolean).join('');
+    return `<div class="sch-tip-head">
+            <span class="sch-tip-name">"${escapeHtml(code.code)}"</span>
+            ${code.name ? `<span class="sch-tip-tag">${escapeHtml(code.name)}</span>` : ''}
+        </div>
+        ${chips ? `<div class="sch-tip-meta">${chips}</div>` : ''}
+        <div class="sch-tip-def" data-state="${state}">${escapeHtml(body)}${state === 'done' ? '<span class="sch-tip-lang">es</span>' : ''}</div>
+        ${code.definition && state !== 'empty'
+            ? `<div class="sch-tip-orig">${escapeHtml(code.definition.substring(0, 400))}</div>` : ''}`;
+}
+
+function schemaShowCodeTip(element, x, y) {
+    const node = SchemaViewer.nodes.get(element.dataset.codeNode || '');
+    const index = Number(element.dataset.codeIndex);
+    const code = node && node.enumCodes ? node.enumCodes[index] : null;
+    if (!code) { schemaHideTip(); return; }
+    const set = (node.typeInfo && node.typeInfo.datatypeName) || '';
+    schemaTipShow(`${node.id}:code:${index}`, code.definition,
+        (state, text) => schemaCodeTipHtml({ ...code, set }, state, text), x, y);
 }
 
 function schemaNodeFromEvent(event) {
@@ -8158,6 +8211,9 @@ function schemaBindTooltip() {
     if (!pane || pane.dataset.tipBound === 'true') return;
     pane.dataset.tipBound = 'true';
     pane.addEventListener('pointermove', event => {
+        // A value of a CodeSet explains itself, not the field that contains it.
+        const codeRow = event.target instanceof Element ? event.target.closest('.sch-enum-code') : null;
+        if (codeRow) { schemaShowCodeTip(codeRow, event.clientX, event.clientY); return; }
         const node = schemaNodeFromEvent(event);
         if (node) schemaShowTip(node, event.clientX, event.clientY);
         else schemaHideTip();
@@ -8307,10 +8363,19 @@ function schemaRenderNode(node) {
     </div>`;
 }
 
+// Each value carries the node and its position instead of its own definition: the
+// text can be long and it is already in memory, so the markup stays small.
 function schemaRenderCodesHtml(node) {
-    return node.enumCodes.map(code =>
-        `<div class="sch-enum-code"><code>"${escapeHtml(code.code)}"</code><span>${escapeHtml(code.name || '')}</span></div>`
-    ).join('') || '<div class="sch-note">CodeSet externo: los valores se publican por separado.</div>';
+    return node.enumCodes.map((code, index) => {
+        const obsolete = /obsolete|deprecat|withdrawn/i.test(code.status || '');
+        return `<div class="sch-enum-code${obsolete ? ' is-obsolete' : ''}"
+                data-code-node="${node.id}" data-code-index="${index}" tabindex="0"
+                aria-label="${escapeHtml(`${code.code}${code.name ? ` (${code.name})` : ''}`)}">
+            <code>"${escapeHtml(code.code)}"</code>
+            <span class="sch-enum-name">${escapeHtml(code.name || '')}</span>
+            ${obsolete ? `<span class="sch-enum-flag">${escapeHtml(code.status)}</span>` : ''}
+        </div>`;
+    }).join('') || '<div class="sch-note">CodeSet externo: los valores se publican por separado.</div>';
 }
 
 // ===== Expand / collapse =====
