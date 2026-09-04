@@ -3102,7 +3102,19 @@ const MDR_MESSAGE_ROLE_KINDS = {
 };
 
 // Order matters: "StatusReport" answers, while "RequestForStatusReport" asks.
+// Two naming conventions live side by side in ISO 20022. Most message sets put the
+// function at the end of the name (AccountOpening*Instruction*, *Confirmation*),
+// but the cash management family puts the verb first: GetLimit asks, ReturnLimit
+// answers it, Create/Modify/Delete instruct. The verb-first rules are checked
+// before the others, or "ReturnStandingOrder" would be read as an order.
 const MDR_MESSAGE_ROLES = [
+    { term: 'Get', where: 'start', match: /^get/, kind: 'request' },
+    { term: 'Return', where: 'start', match: /^return/, kind: 'response' },
+    { term: 'Create', where: 'start', match: /^create/, kind: 'request' },
+    { term: 'Modify', where: 'start', match: /^modify/, kind: 'request' },
+    { term: 'Delete', where: 'start', match: /^delete/, kind: 'request' },
+    // "Cancellation..." is a noun and belongs to the suffix rules below.
+    { term: 'Cancel', where: 'start', match: /^cancel(?!lation)/, kind: 'request' },
     { term: 'RequestFor', match: /^requestfor/, kind: 'request' },
     { term: 'Request', match: /request$/, kind: 'request' },
     { term: 'Query', match: /quer(y|ies)$/, kind: 'request' },
@@ -3114,6 +3126,7 @@ const MDR_MESSAGE_ROLES = [
     { term: 'Return', match: /return$/, kind: 'request' },
     { term: 'Reversal', match: /reversal$/, kind: 'request' },
     { term: 'CreditTransfer', match: /credittransfer$/, kind: 'request' },
+    { term: 'DebitTransfer', match: /debittransfer$/, kind: 'request' },
     { term: 'DirectDebit', match: /directdebit$/, kind: 'request' },
     { term: 'StatusReport', match: /statusreport$/, kind: 'response' },
     { term: 'StatusAdvice', match: /statusadvice$/, kind: 'response' },
@@ -3121,13 +3134,19 @@ const MDR_MESSAGE_ROLES = [
     { term: 'Response', match: /response$/, kind: 'response' },
     { term: 'Rejection', match: /rejection$/, kind: 'response' },
     { term: 'Acknowledgement', match: /acknowledge?ment$/, kind: 'response' },
+    // "Receipt" is the answer that acknowledges a previous instruction.
+    { term: 'Receipt', match: /receipt$/, kind: 'response' },
     { term: 'Report', match: /report$/, kind: 'report' },
     // "StatementOfHoldings", "StatementOfInvestmentFundTransactions": the term does
     // not always close the name. Every asking and answering rule is checked first,
     // so "SecuritiesStatementQuery" is still a request.
     { term: 'Statement', match: /statement/, kind: 'report' },
     { term: 'Notification', match: /notification$/, kind: 'report' },
-    { term: 'Advice', match: /advice$/, kind: 'report' }
+    { term: 'Advice', match: /advice$/, kind: 'report' },
+    // Last of the requests: a message named "...Payment" carries one to be made
+    // ("BackupPayment"), while every payment report or status ends otherwise and has
+    // already matched above.
+    { term: 'Payment', match: /payment$/, kind: 'request' }
 ];
 
 // "SubscriptionOrder (setr.010) V08" and "CustomerCreditTransferInitiationV12",
@@ -3151,14 +3170,19 @@ function mdrMessageRole(name) {
     const rule = MDR_MESSAGE_ROLES.find(item => item.match.test(key));
     if (!rule) return null;
     const kind = MDR_MESSAGE_ROLE_KINDS[rule.kind];
-    return { kind: rule.kind, term: rule.term, label: kind.label, hint: kind.hint };
+    return {
+        kind: rule.kind, term: rule.term, label: kind.label, hint: kind.hint,
+        // Where the term sits is part of the answer: it is what lets the reader
+        // check the deduction against the name.
+        basis: rule.where === 'start' ? 'con el que empieza el nombre' : 'con el que termina el nombre'
+    };
 }
 
 // The tag itself, empty when the name does not state the function of the message.
 function mdrMessageRoleTagHtml(name) {
     const role = mdrMessageRole(name);
     if (!role) return '';
-    const tip = `${role.hint} Deducido del término \u00ab${role.term}\u00bb con el que termina el nombre.`;
+    const tip = `${role.hint} Deducido del término \u00ab${role.term}\u00bb ${role.basis}.`;
     return `<span class="mdr-role-tag is-${role.kind}" title="${escapeHtml(tip)}">${escapeHtml(role.label)}</span>`;
 }
 
@@ -3187,7 +3211,9 @@ function part1TableHtml(block) {
     // Only a table that lists MessageDefinitions gets the extra column.
     const nameAt = part1MessageNameColumn(headerRow);
     const roleHead = '<th class="p1-role-col"'
-        + ' title="Columna añadida por el navegador: deduce del nombre del mensaje, según la convención ISO 20022, si pide, responde o informa">'
+        + ' title="Columna añadida por el navegador: deduce si el mensaje pide, responde o informa a partir del nombre,'
+        + ' según la convención ISO 20022 (el verbo inicial en Get/Return/Modify, o el término final en'
+        + ' Instruction/Confirmation/Report). Pasa el cursor por cada etiqueta para ver en qué término se basó.">'
         + 'Rol <span class="p1-role-col-mark" aria-hidden="true">?</span></th>';
 
     const head = headerRow
@@ -3453,7 +3479,7 @@ const P1_CONCEPT_NOTES = [
             '<strong>Marcan el sentido del intercambio:</strong> van de la parte que instruye a la que ejecuta. Quien los recibe normalmente no contesta con otra instrucción, sino con un estado, una confirmación o un rechazo.',
             '<strong>Están en el alcance del documento:</strong> la Parte 1 explica cuándo se usan y con qué actores; la Parte 2 define su estructura campo a campo.',
             '<strong>La tabla del apartado es la lista oficial del grupo:</strong> cada MessageDefinition con su identificador ISO (por ejemplo <code>pacs.008</code> o <code>acmt.001</code>), que es el que después buscas en la Parte 2.',
-            '<strong>La columna «Rol» la añade el navegador:</strong> marca si el mensaje es una <em>petición</em> (pide o instruye), una <em>respuesta</em> (contesta a uno anterior) o un <em>informe</em> (informa sin petición previa). Se deduce del término con el que termina el nombre, según la convención de nombres ISO 20022; pasa el cursor por la etiqueta para ver en qué término se basó.'
+            '<strong>La columna «Rol» la añade el navegador:</strong> marca si el mensaje es una <em>petición</em> (pide o instruye), una <em>respuesta</em> (contesta a uno anterior) o un <em>informe</em> (informa sin petición previa). Se deduce del nombre según la convención ISO 20022: el verbo con el que empieza (<code>GetLimit</code> pide, <code>ReturnLimit</code> responde) o el término con el que acaba (<code>...Instruction</code>, <code>...Confirmation</code>, <code>...StatusReport</code>). Pasa el cursor por la etiqueta para ver en qué término se basó.'
         ]
     },
     {
