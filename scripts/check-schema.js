@@ -136,6 +136,117 @@ expect('guarda el componente en los dos casos', /componentTypeName = typeName/.t
 expect('solo la forma con pagina alimenta containedTypeName',
     /if \(typePage\) \{\s*\n\s*target\.containedTypeName = typeName;/.test(parseBlock), true);
 
+// ===== the CodeSet tag on the row =====
+// Reported: the code sets of the external codes were not visible in the JSON tree,
+// only inside the hover card, so there was no way to reach their values.
+console.log('\n--- etiqueta del set de codigos en la fila ---');
+const tagBlock = script.slice(
+    script.indexOf('// The name of the CodeSet a field points at'),
+    script.indexOf('function schemaRenderNode'));
+const tagApi = loaded => new Function('escapeHtml', 'MDR', `${tagBlock}
+return { schemaCodeSetTagHtml };`)(
+    value => String(value === undefined ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'),
+    { externalCodeSets: { loaded } });
+
+const codeSetNode = (datatypeName, codes, extra) => ({
+    id: 'schn1', element: { codeSetName: datatypeName }, enumCodes: codes || [],
+    typeInfo: { datatypeName, kind: 'codeset', codes: codes || [], ...(extra || {}) }
+});
+
+const withValues = tagApi(true).schemaCodeSetTagHtml(codeSetNode('ExternalPurpose1Code',
+    [{ code: 'CASH' }, { code: 'SALA' }, { code: 'TAXS' }]));
+expect('muestra el nombre del set en la fila', /ExternalPurpose1Code/.test(withValues), true);
+expect('dice cuantos codigos tiene', /3 códigos/.test(withValues), true);
+expect('se puede pulsar para verlos', /schemaOpenCodeSet\('schn1'\)/.test(withValues), true);
+expect('con valores no queda en ambar', !/is-pending/.test(withValues), true);
+
+const pending = tagApi(false).schemaCodeSetTagHtml(codeSetNode('ExternalCashAccountType1Code', []));
+expect('sin valores tambien se muestra el set',
+    /ExternalCashAccountType1Code/.test(pending) && /sin valores/.test(pending), true);
+expect('sin valores queda marcado como pendiente', /is-pending/.test(pending), true);
+expect('sin catalogo cargado invita a cargarlo',
+    /cargar el catálogo/i.test(pending), true);
+const pendingLoaded = tagApi(true).schemaCodeSetTagHtml(codeSetNode('ExternalCashAccountType1Code', []));
+expect('con catalogo cargado explica que ese set no viene',
+    /no incluye este set/.test(pendingLoaded), true);
+
+// What must not carry the tag.
+expect('un datatype que no es CodeSet no lleva etiqueta',
+    tagApi(true).schemaCodeSetTagHtml({
+        id: 'schn2', element: {}, enumCodes: [],
+        typeInfo: { datatypeName: 'Max35Text', kind: 'text', codes: [] }
+    }), '');
+expect('un CodeSet que el parser no resolvio no lleva etiqueta',
+    tagApi(true).schemaCodeSetTagHtml(codeSetNode('CodeSet_Purpose_Prtry', [])), '');
+expect('sin nombre no lleva etiqueta',
+    tagApi(true).schemaCodeSetTagHtml(codeSetNode('', [])), '');
+
+console.log('\n--- integracion de la etiqueta ---');
+expect('la fila simple la pinta',
+    /schemaKeyHtml\(node\)}<span class="sch-type"[\s\S]{0,200}schemaCodeSetTagHtml\(node\)/.test(script), true);
+expect('la fila desplegable la pinta cuando es un enum',
+    /isEnum \? schemaCodeSetTagHtml\(node\) : ''/.test(script), true);
+expect('el buscador encuentra el nombre del set',
+    /SCHEMA_HIGHLIGHT_TARGETS = '[^']*\.sch-codeset-name/.test(script), true);
+expect('la leyenda explica la etiqueta',
+    /class="sch-codeset sch-legend-item"/.test(html), true);
+expect('al llegar el catalogo se reconstruye el esquema abierto',
+    /if \(SchemaViewer\.open\) schemaReopen\(\);/.test(script), true);
+expect('reconstruye tambien la vista de un building block',
+    /SchemaViewer\.blockRef = blockRef;/.test(script), true);
+
+// ===== hovering a single code =====
+// The definition of a value comes from column D of the ISO workbook (or from the
+// MDR for an internal CodeSet) and is shown translated.
+console.log('\n--- definicion del codigo al pasar el cursor ---');
+const codeTipBlock = script.slice(
+    script.indexOf('// What a single value means'),
+    script.indexOf('function schemaShowCodeTip'));
+const codeTipApi = new Function('escapeHtml', `${codeTipBlock}
+return { schemaCodeTipHtml };`)(
+    value => String(value === undefined ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+
+const sampleCode = {
+    code: 'BBAN', name: 'BBANIdentifier', set: 'ExternalAccountIdentification1Code',
+    definition: 'Basic Bank Account Number (BBAN) - identifier used nationally by financial institutions.',
+    status: 'Registered', replacedBy: ''
+};
+const done = codeTipApi.schemaCodeTipHtml(sampleCode, 'done', 'Número de cuenta bancaria básico, usado a nivel nacional.');
+expect('la tarjeta identifica el codigo', /"BBAN"/.test(done) && /BBANIdentifier/.test(done), true);
+expect('muestra la definicion en espanol', /Número de cuenta bancaria básico/.test(done), true);
+expect('la marca como espanol', /sch-tip-lang">es</.test(done), true);
+expect('conserva el original en ingles para verificar',
+    /Basic Bank Account Number/.test(done), true);
+expect('dice a que set pertenece', /ExternalAccountIdentification1Code/.test(done), true);
+
+const pendingTip = codeTipApi.schemaCodeTipHtml(sampleCode, 'pending', '');
+expect('mientras traduce lo dice', /Traduciendo la definición/.test(pendingTip), true);
+const failedTip = codeTipApi.schemaCodeTipHtml(sampleCode, 'failed', '');
+expect('si falla la traduccion muestra el original',
+    /no se pudo traducir/i.test(failedTip) && /Basic Bank Account Number/.test(failedTip), true);
+const emptyTip = codeTipApi.schemaCodeTipHtml({ code: 'XXXX', name: '', set: '', definition: '' }, 'empty', '');
+expect('sin definicion lo dice y no inventa nada',
+    /no incluye una definición/.test(emptyTip) && !/sch-tip-orig/.test(emptyTip), true);
+
+const retired = codeTipApi.schemaCodeTipHtml(
+    { code: 'CASH', name: 'CashManagement', set: 'ExternalPurpose1Code', definition: 'Old value.', status: 'Obsolete', replacedBy: 'CCRD' },
+    'done', 'Valor antiguo.');
+expect('avisa de un codigo retirado', /Obsolete/.test(retired), true);
+expect('dice por que codigo se reemplaza', /CCRD/.test(retired), true);
+
+console.log('\n--- cableado del cursor sobre el codigo ---');
+expect('cada valor sabe a que nodo y posicion pertenece',
+    /data-code-node="\$\{node\.id\}" data-code-index="\$\{index\}"/.test(script), true);
+expect('el cursor sobre un valor abre su tarjeta, no la del campo',
+    /closest\('\.sch-enum-code'\)/.test(script) && /schemaShowCodeTip\(codeRow/.test(script), true);
+expect('campo y codigo comparten el mismo motor de traduccion',
+    /function schemaTipShow\(/.test(script)
+    && /schemaTipShow\(node\.id, node\.definition/.test(script)
+    && /schemaTipShow\(`\$\{node\.id\}:code:\$\{index\}`, code\.definition/.test(script), true);
+expect('un valor retirado se ve tachado en el arbol',
+    /sch-enum-code\$\{obsolete \? ' is-obsolete' : ''\}/.test(script), true);
+
 console.log('\n--- se muestra al pasar el cursor ---');
 const tipStart = script.indexOf('function schemaTipHtml');
 const tipBody = script.slice(tipStart, script.indexOf('\n}', tipStart));

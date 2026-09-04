@@ -120,9 +120,19 @@ expect('los textos sin prosa no entran en la cola',
     bodyOf('enqueueTranslationNode').includes('hasTranslatableProse'));
 [['.p1-text', 'prosa del Word'], ['.p1-table tbody td', 'celdas de tabla'],
  ['.p1-step-title', 'pasos del flujo'], ['.bc-steps li strong', 'pasos en la vista tecnica'],
- ['.scope-usage-text', 'alcance y uso'], ['.definition-text', 'definiciones tecnicas']
+ ['.scope-usage-text', 'alcance y uso'], ['.definition-text', 'definiciones tecnicas'],
+ // El panel de contenido del Word: titulo de la seccion, su indice y sus apartados.
+ ['.p1-section-title', 'titulo de la seccion del Word'],
+ ['#p1Tree .bb-name', 'titulos del indice del Word'],
+ ['.p1-child-name', 'apartados de la seccion'],
+ ['.p1-table thead th', 'encabezados de las tablas del Word']
 ].forEach(([selector, what]) =>
     expect(`  traduce ${what} (${selector})`, selectors.includes(selector)));
+expect('  la columna "Rol" del navegador no se traduce',
+    selectors.includes('.p1-table thead th:not(.p1-role-col)'));
+// El indice lateral se repinta en cada navegacion: traducirlo encolaria sus
+// cientos de titulos una y otra vez.
+expect('  el indice lateral queda fuera', !selectors.includes('.p1-outline-item'));
 // The definition the PDF lends to the Word travels with a translatable class.
 expect('  traduce la definicion del PDF mostrada en el Word',
     /class="tb-def scope-usage-text"/.test(bodyOf('renderTechnicalBridgePanel')));
