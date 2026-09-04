@@ -1379,6 +1379,12 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
         <span class="sch-badge sch-arr sch-legend-item" tabindex="0"
               data-legend-tip="Colección repetible: el campo admite más de una ocurrencia, por ejemplo [1..n] o [0..*]. En JSON se representa como array."
               aria-label="array: colección repetible, el campo admite más de una ocurrencia">array</span>
+        <span class="sch-codeset sch-legend-item" tabindex="0"
+              data-legend-tip="Set de códigos al que apunta el campo. Con valores disponibles, al pulsarlo se despliegan dentro del propio esquema; si el MDR no los publica (CodeSet externo de ISO), la etiqueta queda en ámbar."
+              aria-label="Set de códigos al que apunta el campo: al pulsarlo se despliegan sus valores">
+            <span class="sch-codeset-label" aria-hidden="true">set</span>
+            <span class="sch-codeset-name">ExternalPurpose1Code</span>
+        </span>
         <span class="sch-badge sch-cons sch-legend-item" tabindex="0"
               data-legend-tip="Constraint del MDR que afecta al campo (C1, C2, C3...). El número identifica la regla concreta descrita en la sección Constraints del mensaje."
               aria-label="Cn: constraint del MDR que afecta al campo, el número identifica la regla">Cn</span>
@@ -7569,6 +7575,8 @@ const SchemaViewer = {
     maxDepth: 4,
     lastFocus: null,
     truncated: false,
+    // Which building block was opened, so the same view can be rebuilt.
+    blockRef: '',
     // Search: matches are highlighted in place. Collapsing the tree down to the
     // matching branches is opt-in, so context is never lost by accident.
     onlyMatches: false,
