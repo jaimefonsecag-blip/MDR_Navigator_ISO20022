@@ -98,6 +98,23 @@ expect('abrir un mensaje trae su seccion de negocio',
 expect('abrir una seccion trae la estructura del mensaje',
     bodyOf('openPart1Section').includes('syncMessageToSection('));
 
+console.log('\n=== la pantalla de carga cabe y se puede recorrer ===');
+const styles = html.slice(html.indexOf('<style>'), html.indexOf('</style>'));
+const uploadRule = (styles.match(/#uploadScreen \{[^}]*\}/) || [''])[0];
+// Con overflow:hidden el boton "Abrir el navegador" quedaba fuera de la pantalla en
+// un portatil y no habia forma de llegar a el sin reducir el zoom.
+expect('la pantalla de carga no recorta su contenido',
+    !/overflow:\s*hidden/.test(uploadRule), uploadRule);
+expect('se puede desplazar en vertical', /overflow-y:\s*auto/.test(uploadRule), uploadRule);
+// Centrar con align-items:center recorta la parte de arriba cuando no cabe.
+expect('centra sin recortar (margin:auto en el contenedor)',
+    /\.upload-container \{[^}]*margin:auto/.test(styles));
+expect('el boton de abrir acompana el borde inferior',
+    /\.btn-open-nav:not\(\.hidden\) \{[^}]*position:sticky/.test(styles));
+expect('hay ajuste para pantallas bajas', /@media \(max-height: 860px\)/.test(styles));
+expect('el boton se trae a la vista al quedar listo',
+    bodyOf('refreshOpenNavigatorButton').includes('scrollIntoView'));
+
 console.log('\n=== traduccion de las dos mitades ===');
 const selectorsAt = script.indexOf('const TRANSLATABLE_SELECTORS');
 const selectors = script.slice(selectorsAt, script.indexOf('].join', selectorsAt));

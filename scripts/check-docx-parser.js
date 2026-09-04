@@ -290,6 +290,22 @@ const roleCases = [
     ['SecuritiesRejectionMessage', 'response'],
     ['PriceReport', 'report'],
     ['AccountingStatementOfHoldings', 'report'],
+    // Cash Management names the verb first, and the tail of the name means nothing
+    // there: "ReturnStandingOrder" answers a Get, it does not place an order.
+    ['GetLimit', 'request'],
+    ['ReturnLimit', 'response'],
+    ['GetStandingOrder', 'request'],
+    ['ReturnStandingOrder', 'response'],
+    ['ModifyStandingOrder', 'request'],
+    ['DeleteReservation', 'request'],
+    ['CreateMember', 'request'],
+    ['CancelTransaction', 'request'],
+    ['GetBusinessDayInformation', 'request'],
+    ['ReturnBusinessDayInformation', 'response'],
+    ['LiquidityCreditTransfer', 'request'],
+    ['LiquidityDebitTransfer', 'request'],
+    ['BackupPayment', 'request'],
+    ['Receipt', 'response'],
     // Payments: the domain the tagging was asked for
     ['CustomerCreditTransferInitiation', 'request'],
     ['FIToFICustomerCreditTransfer', 'request'],
@@ -305,6 +321,16 @@ roleCases.forEach(([name, kind]) =>
 expect('no inventa rol cuando el nombre no lo dice',
     roleOf('ResolutionOfInvestigation') === null && roleOf('AccountHoldingInformation') === null,
     `${roleOf('ResolutionOfInvestigation')} / ${roleOf('AccountHoldingInformation')}`);
+// "Additional..." no es el verbo "Add", y "Cancellation..." es un sustantivo: el
+// verbo inicial solo cuenta cuando de verdad lo es.
+expect('"AdditionalPaymentInformation" no se lee como el verbo Add',
+    roleOf('AdditionalPaymentInformation') === null, roleOf('AdditionalPaymentInformation'));
+expect('"CancellationStatusReport" es respuesta, no una orden de cancelar',
+    roleOf('CancellationStatusReport') === 'response', roleOf('CancellationStatusReport'));
+expect('el rol dice si el termino va al principio o al final',
+    (roleApi.mdrMessageRole('GetLimit') || {}).basis === 'con el que empieza el nombre'
+    && (roleApi.mdrMessageRole('AccountOpeningInstruction') || {}).basis === 'con el que termina el nombre',
+    `${(roleApi.mdrMessageRole('GetLimit') || {}).basis} / ${(roleApi.mdrMessageRole('AccountOpeningInstruction') || {}).basis}`);
 expect('ignora identificador y version dentro del nombre',
     roleApi.mdrMessageKey('SubscriptionOrder (setr.010) V08') === 'subscriptionorder',
     roleApi.mdrMessageKey('SubscriptionOrder (setr.010) V08'));
