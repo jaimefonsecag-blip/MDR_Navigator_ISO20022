@@ -327,6 +327,21 @@ expect('"AdditionalPaymentInformation" no se lee como el verbo Add',
     roleOf('AdditionalPaymentInformation') === null, roleOf('AdditionalPaymentInformation'));
 expect('"CancellationStatusReport" es respuesta, no una orden de cancelar',
     roleOf('CancellationStatusReport') === 'response', roleOf('CancellationStatusReport'));
+// Account Switching: "Request"/"Response" can sit in the middle of the name, which
+// the start/end rules do not reach; and a source typo dropped the final "n".
+expect('"AccountSwitchRequestRedirection" (Request en medio) es peticion',
+    roleOf('AccountSwitchRequestRedirection') === 'request', roleOf('AccountSwitchRequestRedirection'));
+expect('"AccountSwitchRequestBalanceTransfer" es peticion',
+    roleOf('AccountSwitchRequestBalanceTransfer') === 'request', roleOf('AccountSwitchRequestBalanceTransfer'));
+expect('"AccountSwitchInformationResponse" es respuesta',
+    roleOf('AccountSwitchInformationResponse') === 'response', roleOf('AccountSwitchInformationResponse'));
+expect('"AccountSwitchTechnicalRejectio" (typo del MDR sin la n) es respuesta',
+    roleOf('AccountSwitchTechnicalRejectio') === 'response', roleOf('AccountSwitchTechnicalRejectio'));
+expect('"AccountSwitchTerminationSwitch" no declara rol',
+    roleOf('AccountSwitchTerminationSwitch') === null, roleOf('AccountSwitchTerminationSwitch'));
+expect('la palabra suelta gana como ultimo recurso, marcada como "presente en el nombre"',
+    (roleApi.mdrMessageRole('AccountSwitchRequestRedirection') || {}).basis === 'presente en el nombre',
+    (roleApi.mdrMessageRole('AccountSwitchRequestRedirection') || {}).basis);
 expect('el rol dice si el termino va al principio o al final',
     (roleApi.mdrMessageRole('GetLimit') || {}).basis === 'con el que empieza el nombre'
     && (roleApi.mdrMessageRole('AccountOpeningInstruction') || {}).basis === 'con el que termina el nombre',

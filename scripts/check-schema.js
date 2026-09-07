@@ -188,8 +188,8 @@ expect('la fila desplegable la pinta cuando es un enum',
     /isEnum \? schemaCodeSetTagHtml\(node\) : ''/.test(script), true);
 expect('el buscador encuentra el nombre del set',
     /SCHEMA_HIGHLIGHT_TARGETS = '[^']*\.sch-codeset-name/.test(script), true);
-expect('la leyenda explica la etiqueta',
-    /class="sch-codeset sch-legend-item"/.test(html), true);
+expect('la etiqueta set no aparece en la leyenda del pie',
+    !/class="sch-codeset sch-legend-item"/.test(html), true);
 expect('al llegar el catalogo se reconstruye el esquema abierto',
     /if \(SchemaViewer\.open\) schemaReopen\(\);/.test(script), true);
 expect('reconstruye tambien la vista de un building block',
