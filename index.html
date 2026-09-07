@@ -3173,7 +3173,9 @@ const MDR_MESSAGE_ROLES = [
     { term: 'StatusAdvice', match: /statusadvice$/, kind: 'response' },
     { term: 'Confirmation', match: /confirmation$/, kind: 'response' },
     { term: 'Response', match: /response$/, kind: 'response' },
-    { term: 'Rejection', match: /rejection$/, kind: 'response' },
+    // "Rejectio" tolerates the missing final "n" of a source typo seen in the wild
+    // (AccountSwitch "TechnicalRejectio"), and "reject" also covers TechnicalReject.
+    { term: 'Rejection', match: /reject(?:ion|io)?$/, kind: 'response' },
     { term: 'Acknowledgement', match: /acknowledge?ment$/, kind: 'response' },
     // "Receipt" is the answer that acknowledges a previous instruction.
     { term: 'Receipt', match: /receipt$/, kind: 'response' },
@@ -3208,14 +3210,26 @@ function mdrMessageKey(name) {
 function mdrMessageRole(name) {
     const key = mdrMessageKey(name);
     if (key.length < 4) return null;
-    const rule = MDR_MESSAGE_ROLES.find(item => item.match.test(key));
+    let rule = MDR_MESSAGE_ROLES.find(item => item.match.test(key));
+    // Last resort: "request" or "response" anywhere in the name settles it. Some
+    // sets bury the word in the middle (AccountSwitch*Request*Redirection), where
+    // the specific rules above, anchored to the start or the end, do not reach it.
+    if (!rule) {
+        if (/response/.test(key)) rule = { term: 'Response', where: 'anywhere', kind: 'response' };
+        else if (/request/.test(key)) rule = { term: 'Request', where: 'anywhere', kind: 'request' };
+    }
     if (!rule) return null;
     const kind = MDR_MESSAGE_ROLE_KINDS[rule.kind];
+    const basisByWhere = {
+        start: 'con el que empieza el nombre',
+        end: 'con el que termina el nombre',
+        anywhere: 'presente en el nombre'
+    };
     return {
         kind: rule.kind, term: rule.term, label: kind.label, hint: kind.hint,
         // Where the term sits is part of the answer: it is what lets the reader
         // check the deduction against the name.
-        basis: rule.where === 'start' ? 'con el que empieza el nombre' : 'con el que termina el nombre'
+        basis: basisByWhere[rule.where] || basisByWhere.end
     };
 }
 
