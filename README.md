@@ -64,7 +64,7 @@ npm install   # solo para poder ejecutar las verificaciones
 npm run check
 ```
 
-`npm run check` valida trece cosas:
+`npm run check` valida catorce cosas:
 
 | Verificación | Qué comprueba |
 |---|---|
@@ -79,6 +79,7 @@ npm run check
 | `check-pdf-perf` | Que la resolución de datatypes por índice (usada para acelerar PDFs de miles de páginas) devuelva exactamente lo mismo que el escaneo completo original |
 | `check-schema-expand` | Que "Expandir todo" en el visor de esquema abra exactamente los mismos nodos que el algoritmo original, sin volver a escanear el árbol completo en cada nivel |
 | `check-bb-dedup` | Que el árbol de building blocks no repita un campo con un placeholder "±" cuando ya existe la versión que referencia su MessageComponent |
+| `check-actor-heads` | Que "Cómo funciona el flujo" identifique la contraparte de un paso (report user, account holder, loan borrower...) en vez de mostrar "sin indicar" cuando la frase sí la nombra |
 | `check-external-codes` | Lee el Excel real de códigos externos: hoja, columnas, códigos retirados y cableado |
 | `check-docx-parser` | Ejecuta el parser DOCX real contra un MDR de ejemplo y valida secciones, diagramas, tablas, actores y flujos |
 

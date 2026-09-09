@@ -2718,7 +2718,13 @@ const P1_ACTOR_HEADS = [
     'distributor', 'issuer', 'counterparty', 'intermediary', 'operator', 'participant',
     'member', 'client', 'customer', 'provider', 'creditor', 'debtor', 'transferor',
     'transferee', 'initiator', 'originator', 'beneficiary', 'house', 'manager',
-    'administrator', 'authority', 'sender', 'receiver'
+    'administrator', 'authority', 'sender', 'receiver',
+    // Reported: "Report Provider" resolved but its counterpart "Report User" did
+    // not, because "user" was missing here — the same gap recurs with other
+    // domains whose flows are named around a different pair of role nouns.
+    'user', 'holder', 'requester', 'requestor', 'respondent', 'subscriber',
+    'correspondent', 'acquirer', 'merchant', 'processor', 'guarantor', 'obligor',
+    'borrower', 'lender', 'insurer', 'applicant'
 ];
 const P1_ACTOR_HEAD_SET = new Set(P1_ACTOR_HEADS);
 // Heads specific enough to name an actor on their own ("the Debtor", "the Investor").
@@ -2726,7 +2732,8 @@ const P1_ACTOR_HEAD_SET = new Set(P1_ACTOR_HEADS);
 const P1_ACTOR_SOLO_HEADS = new Set([
     'investor', 'transferor', 'transferee', 'creditor', 'debtor', 'intermediary',
     'custodian', 'depository', 'depositary', 'registrar', 'trustee', 'distributor',
-    'issuer', 'beneficiary', 'originator', 'broker', 'initiator'
+    'issuer', 'beneficiary', 'originator', 'broker', 'initiator',
+    'guarantor', 'obligor', 'borrower', 'lender', 'insurer', 'applicant'
 ]);
 // Qualifiers that point at an actor without naming one: "the same party" is not a
 // participant. Their presence anywhere in the phrase disqualifies it.
