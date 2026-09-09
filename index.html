@@ -9685,10 +9685,14 @@ function apiBuildComponents() {
 // La misma agrupación que el YAML, pero con un valor de ejemplo en vez de un
 // tipo, y siempre anidada: la referencia a otro schema es un detalle del
 // YAML, no del JSON que de verdad viaja en el mensaje.
-function apiSampleFromName(node) {
+// parentName: nombre del nodo padre (p. ej. "BranchIdentification"). Se usa
+// para campos ambiguos como "Name" o "Identification" cuyo significado cambia
+// según el tipo de entidad que los contiene.
+function apiSampleFromName(node, parentName) {
     const dtype = String((node.typeInfo && node.typeInfo.datatypeName) || '');
     const name  = String(node.name || '');
     const tag   = String(node.tag  || '');
+    const ctx   = String(parentName || '');
 
     // Datatype lookup (más fiable que el nombre del campo)
     if (/\bIBAN/i.test(dtype))                             return 'GB29NWBK60161331926819';
@@ -9703,7 +9707,7 @@ function apiSampleFromName(node) {
     if (/DateAndDateTime/i.test(dtype))                    return '2024-01-15T09:30:00Z';
     if (/DecimalNumber|ImpliedCurrencyAmountRange/i.test(dtype)) return 1250.00;
 
-    // Nombre de campo exacto
+    // Nombre de campo exacto (sin ambigüedad de contexto)
     if (name === 'MessageIdentification')                  return 'MSGID-20240115-001';
     if (name === 'EndToEndIdentification')                 return 'E2E-20240115-0001';
     if (name === 'TransactionIdentification')              return 'TXN-20240115-0001';
@@ -9720,8 +9724,6 @@ function apiSampleFromName(node) {
     if (name === 'ControlSum')                             return 3750.00;
     if (/InstructedAmount|InterbankSettlementAmount|TransactionAmount|Amount$/.test(name)) return 1250.00;
     if (name === 'Currency' || tag === 'Ccy')              return 'EUR';
-    if (name === 'Name'     || tag === 'Nm')               return 'Empresa ABC S.A.S.';
-    if (name === 'ShortName')                              return 'ABC';
     if (name === 'TownName' || tag === 'TwnNm')            return 'Bogotá';
     if (name === 'PostCode' || tag === 'PstCd')            return '110111';
     if (name === 'StreetName' || tag === 'StrtNm')         return 'Calle 100';
@@ -9737,9 +9739,33 @@ function apiSampleFromName(node) {
     if (name === 'Unstructured' || /RemittanceInformation/.test(name)) return 'Pago factura 2024-001';
     if (name === 'AdditionalInformation' || tag === 'AddtlInf') return 'Información adicional del mensaje';
     if (name === 'Proprietary' || tag === 'Prtry')         return 'TIPO-LOCAL';
-    if (name === 'Identification' || tag === 'Id')         return 'ID-20240115-001';
 
-    // XML tag como fallback
+    // Campos sensibles al contexto del padre ─────────────────────────────────
+    // "Name" / "Nm": el significado cambia según quién lo contiene.
+    if (name === 'Name' || tag === 'Nm') {
+        if (/Branch/i.test(ctx))                           return 'Sucursal Centro';
+        if (/FinancialInstitution/i.test(ctx))             return 'Banco de Bogotá';
+        if (/Agent/i.test(ctx))                            return 'Banco Corresponsal';
+        if (/Contact/i.test(ctx))                          return 'Juan Pérez';
+        if (/Scheme/i.test(ctx))                           return 'SWIFT';
+        return 'Empresa ABC S.A.S.';   // Party, Creditor, Debtor, etc.
+    }
+    // "ShortName": abreviatura del Name del mismo padre.
+    if (name === 'ShortName') {
+        if (/Branch/i.test(ctx))                           return 'SCE';
+        if (/FinancialInstitution/i.test(ctx))             return 'BDEB';
+        return 'ABC';
+    }
+    // "Identification" / "Id": identificador cuyo formato depende del padre.
+    if (name === 'Identification' || tag === 'Id') {
+        if (/Branch/i.test(ctx))                           return 'SUC-001';
+        if (/Account/i.test(ctx))                          return 'ACC-20240115-001';
+        if (/FinancialInstitution|Agent/i.test(ctx))       return 'BOFAGB22XXX';
+        if (/Scheme/i.test(ctx))                           return 'IBAN';
+        return 'ID-20240115-001';
+    }
+
+    // XML tag como fallback (sin contexto de padre)
     if (tag === 'MsgId')      return 'MSGID-20240115-001';
     if (tag === 'EndToEndId') return 'E2E-20240115-0001';
     if (tag === 'TxId')       return 'TXN-20240115-0001';
@@ -9760,7 +9786,11 @@ function apiSampleFromName(node) {
 function apiSampleLeaf(node) {
     const t = node.typeInfo || {};
     if (t.codes && t.codes.length) return t.codes[0].code;
-    const named = apiSampleFromName(node);
+    // Resuelve el nombre del nodo padre para que apiSampleFromName pueda
+    // devolver un ejemplo contextual en campos ambiguos (Name, Identification…)
+    const parentNode = node.parentId ? SchemaViewer.nodes.get(node.parentId) : null;
+    const parentName = (parentNode && parentNode.name) || '';
+    const named = apiSampleFromName(node, parentName);
     if (named !== null) return named;
     if (t.jsonFormat === 'date-time') return '2024-01-15T09:30:00Z';
     if (t.jsonFormat === 'date') return '2024-01-15';
