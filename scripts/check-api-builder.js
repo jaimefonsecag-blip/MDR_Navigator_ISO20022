@@ -109,7 +109,7 @@ console.log('--- ancestro seleccionado mas cercano ---');
     expect('un CodeSet corto se vuelca completo como enum', root.properties.Purpose.enum, ['P0', 'P1', 'P2', 'P3', 'P4']);
 
     const sample = api.apiBuildSample();
-    expect('el preview JSON usa un valor de ejemplo por tipo (date-time)', sample.GroupHeader.CreationDateTime, '2024-01-01T00:00:00Z');
+    expect('el preview JSON usa un valor de ejemplo por tipo (date-time)', sample.GroupHeader.CreationDateTime, '2024-01-15T09:30:00Z');
     expect('el preview JSON no envuelve un campo simple en objeto', typeof sample.Amount, 'number');
 
     const yaml = api.apiToYaml({ components: { schemas } });
