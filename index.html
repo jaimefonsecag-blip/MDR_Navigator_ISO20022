@@ -8412,6 +8412,21 @@ function schemaBuildMessageRoot(msgId) {
         source = index.roots;
     }
 
+    // Reported: the MDR structure table's very first row is the ISO 20022
+    // envelope itself ("Message root <Document> <BkToCstmrAcctRpt>") — it
+    // wraps the exact same content the message's own root node already
+    // represents, not a real nested field, so it showed up as a pointless
+    // extra level ("BankToCustomerAccountReport" containing "Message root
+    // <Document>" containing the actual fields). When that row is the lone
+    // top-level row, skip straight to its children and carry its own
+    // constraint/definition/page up onto the message root instead of losing
+    // them.
+    let envelope = null;
+    if (source.length === 1 && /^message root\b/i.test(String(source[0].name || '').trim())) {
+        envelope = source[0];
+        source = index.childrenByParent.get(envelope) || [];
+    }
+
     const groups = schemaOrGroups(source);
     const messageNode = schemaSyntheticNode({
         msgId,
@@ -8420,7 +8435,9 @@ function schemaBuildMessageRoot(msgId) {
         mult: '[1..1]',
         depth: 0,
         table: index,
-        definition: msg.definition || '',
+        definition: (envelope && envelope.definition) || msg.definition || '',
+        constraint: (envelope && envelope.constraint) || '',
+        refPage: (envelope && envelope.refPage) || '',
         section: msg.sectionRoot || ''
     });
     messageNode.children = source.map(child => schemaCreateNode({
