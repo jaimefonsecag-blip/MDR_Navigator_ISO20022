@@ -9685,12 +9685,86 @@ function apiBuildComponents() {
 // La misma agrupación que el YAML, pero con un valor de ejemplo en vez de un
 // tipo, y siempre anidada: la referencia a otro schema es un detalle del
 // YAML, no del JSON que de verdad viaja en el mensaje.
+function apiSampleFromName(node) {
+    const dtype = String((node.typeInfo && node.typeInfo.datatypeName) || '');
+    const name  = String(node.name || '');
+    const tag   = String(node.tag  || '');
+
+    // Datatype lookup (más fiable que el nombre del campo)
+    if (/\bIBAN/i.test(dtype))                             return 'GB29NWBK60161331926819';
+    if (/BICFIIdentifier|AnyBICIdentifier/i.test(dtype))   return 'BOFAGB22XXX';
+    if (/\bLEIIdentifier\b/i.test(dtype))                  return '5493001KJTIIGC8Y1R12';
+    if (/ActiveCurrencyCode|CurrencyCode|ActiveOrHistoric/i.test(dtype)) return 'EUR';
+    if (/CountryCode/i.test(dtype))                        return 'CO';
+    if (/UUIDv4Identifier|UETR/i.test(dtype))              return 'a26e9a26-5e4a-4e5e-8c4e-2f4a9a0e5e4e';
+    if (/PhoneNumber/i.test(dtype))                        return '+57 1 234 5678';
+    if (/MobilePhoneNumber/i.test(dtype))                  return '+57 315 234 5678';
+    if (/EmailAddress/i.test(dtype))                       return 'contacto@empresa.com';
+    if (/DateAndDateTime/i.test(dtype))                    return '2024-01-15T09:30:00Z';
+    if (/DecimalNumber|ImpliedCurrencyAmountRange/i.test(dtype)) return 1250.00;
+
+    // Nombre de campo exacto
+    if (name === 'MessageIdentification')                  return 'MSGID-20240115-001';
+    if (name === 'EndToEndIdentification')                 return 'E2E-20240115-0001';
+    if (name === 'TransactionIdentification')              return 'TXN-20240115-0001';
+    if (name === 'InstructionIdentification')              return 'INSTR-001';
+    if (name === 'UniqueEndToEndTransactionReference')     return 'a26e9a26-5e4a-4e5e-8c4e-2f4a9a0e5e4e';
+    if (name === 'ClearingSystemReference')                return 'CSR-20240115-001';
+    if (name === 'StatementIdentification')                return 'STMT-20240115-001';
+    if (name === 'ReportIdentification')                   return 'RPT-20240115-001';
+    if (name === 'ProprietaryReference')                   return 'REF-20240115-001';
+    if (name === 'IBAN'  || tag === 'IBAN')                return 'GB29NWBK60161331926819';
+    if (name === 'AnyBIC'  || name === 'BICFI' || tag === 'AnyBIC' || tag === 'BICFI') return 'BOFAGB22XXX';
+    if (name === 'LEI'   || tag === 'LEI')                 return '5493001KJTIIGC8Y1R12';
+    if (name === 'NumberOfTransactions')                   return 3;
+    if (name === 'ControlSum')                             return 3750.00;
+    if (/InstructedAmount|InterbankSettlementAmount|TransactionAmount|Amount$/.test(name)) return 1250.00;
+    if (name === 'Currency' || tag === 'Ccy')              return 'EUR';
+    if (name === 'Name'     || tag === 'Nm')               return 'Empresa ABC S.A.S.';
+    if (name === 'ShortName')                              return 'ABC';
+    if (name === 'TownName' || tag === 'TwnNm')            return 'Bogotá';
+    if (name === 'PostCode' || tag === 'PstCd')            return '110111';
+    if (name === 'StreetName' || tag === 'StrtNm')         return 'Calle 100';
+    if (name === 'BuildingNumber')                         return '8A-55';
+    if (name === 'BuildingName')                           return 'Torre Empresarial';
+    if (name === 'AddressLine' || tag === 'AdrLine')       return 'Calle 100 # 8A-55, Bogotá';
+    if (name === 'District')                               return 'Chapinero';
+    if (name === 'SubDivision')                            return 'Cundinamarca';
+    if (name === 'Country' || name === 'CountryOfResidence' || name === 'CountryOfBirth' || tag === 'Ctry') return 'CO';
+    if (/EmailAddress/.test(name))                         return 'contacto@empresa.com';
+    if (/MobileNumber/.test(name))                         return '+57 315 234 5678';
+    if (/PhoneNumber/.test(name))                          return '+57 1 234 5678';
+    if (name === 'Unstructured' || /RemittanceInformation/.test(name)) return 'Pago factura 2024-001';
+    if (name === 'AdditionalInformation' || tag === 'AddtlInf') return 'Información adicional del mensaje';
+    if (name === 'Proprietary' || tag === 'Prtry')         return 'TIPO-LOCAL';
+    if (name === 'Identification' || tag === 'Id')         return 'ID-20240115-001';
+
+    // XML tag como fallback
+    if (tag === 'MsgId')      return 'MSGID-20240115-001';
+    if (tag === 'EndToEndId') return 'E2E-20240115-0001';
+    if (tag === 'TxId')       return 'TXN-20240115-0001';
+    if (tag === 'InstrId')    return 'INSTR-001';
+    if (tag === 'UETR')       return 'a26e9a26-5e4a-4e5e-8c4e-2f4a9a0e5e4e';
+    if (tag === 'Ccy')        return 'EUR';
+    if (tag === 'Ctry')       return 'CO';
+    if (tag === 'PstCd')      return '110111';
+    if (tag === 'TwnNm')      return 'Bogotá';
+    if (tag === 'StrtNm')     return 'Calle 100';
+    if (tag === 'AdrLine')    return 'Calle 100 # 8A-55, Bogotá';
+    if (tag === 'CtrlSum')    return 3750.00;
+    if (tag === 'NbOfTxs')    return 3;
+
+    return null;
+}
+
 function apiSampleLeaf(node) {
     const t = node.typeInfo || {};
     if (t.codes && t.codes.length) return t.codes[0].code;
-    if (t.jsonFormat === 'date-time') return '2024-01-01T00:00:00Z';
-    if (t.jsonFormat === 'date') return '2024-01-01';
-    if (t.jsonFormat === 'time') return '00:00:00';
+    const named = apiSampleFromName(node);
+    if (named !== null) return named;
+    if (t.jsonFormat === 'date-time') return '2024-01-15T09:30:00Z';
+    if (t.jsonFormat === 'date') return '2024-01-15';
+    if (t.jsonFormat === 'time') return '09:30:00';
     if (t.jsonType === 'number') return 0;
     if (t.jsonType === 'boolean') return true;
     return t.datatypeName ? `<${t.datatypeName}>` : 'string';

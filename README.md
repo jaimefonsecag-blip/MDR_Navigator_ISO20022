@@ -64,7 +64,7 @@ npm install   # solo para poder ejecutar las verificaciones
 npm run check
 ```
 
-`npm run check` valida diecinueve cosas:
+`npm run check` valida veinte cosas:
 
 | Verificación | Qué comprueba |
 |---|---|
@@ -85,6 +85,7 @@ npm run check
 | `check-schema-envelope` | Que el envoltorio ISO 20022 ("Message root <Document>", la primera fila de la tabla de estructura) no aparezca como un nivel propio en el esquema JSON, ya que es el mismo elemento que la raíz del mensaje |
 | `check-api-orgroup` | Que el generador de OpenAPI no permita marcar dos campos del mismo grupo `SelectOneOf` a la vez: marcar uno desmarca automáticamente al otro miembro de esa misma elección |
 | `check-api-yaml` | Que el YAML generado no produzca `"[object Object]"` para objetos sin propiedades, que no aparezca la nota «No se marcó ningún campo» en la descripción y que los campos `SelectOneOf` no añadan una nota de grupo en su `description` |
+| `check-api-sample` | Que `apiSampleFromName` devuelva ejemplos contextuales (IBAN, BIC, LEI, identificadores, moneda, país, importes…) según el datatype ISO, el nombre del campo y el tag XML; y que `apiSampleLeaf` los use correctamente sin romper el fallback a CodeSets ni a los tipos genéricos |
 | `check-external-codes` | Lee el Excel real de códigos externos: hoja, columnas, códigos retirados y cableado |
 | `check-docx-parser` | Ejecuta el parser DOCX real contra un MDR de ejemplo y valida secciones, diagramas, tablas, actores y flujos |
 
