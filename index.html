@@ -1479,7 +1479,7 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
         <button type="button" class="btn-sch-nav" onclick="schemaGotoMatch(1)" title="Siguiente coincidencia (Enter)" aria-label="Siguiente coincidencia">&rsaquo;</button>
         <button type="button" class="btn-sch" id="schemaOnlyMatchBtn" onclick="schemaToggleOnlyMatches()" title="Oculta las ramas sin coincidencias. Desactivado, el árbol completo sigue visible y solo se resalta lo encontrado">Solo coincidencias</button>
       </span>
-      <button type="button" class="btn-sch" onclick="schemaExpandAll()" title="Expande el árbol hasta la profundidad seleccionada">Expandir</button>
+      <button type="button" class="btn-sch" onclick="schemaExpandAllFull()" title="Expande todas las propiedades del árbol, incluidas las anidadas dentro de otras (hasta el límite de tamaño)">Expandir todo</button>
       <button type="button" class="btn-sch" onclick="schemaCollapseAll()">Contraer</button>
       <span class="sch-toolbar-group">
         <span class="sch-toolbar-label">Nivel</span>
@@ -3080,11 +3080,41 @@ function part1FlowFromProse(section) {
 }
 
 // A sentence such as "the account servicer may send a status report in response to
-// the instruction" names no receiver. When the whole flow only involves two
-// parties there is just one possible counterpart, so the hop is completed and
-// flagged as inferred instead of being left half drawn.
+// the instruction" names no receiver. Two passes try to complete it:
+// (1) borrow the missing end from another step of the same flow that already
+// named both ends and shares the one actor this step does have. This is what
+// makes "The transferor replies with a Status Report..." resolve correctly
+// even in a document that also calls that same party "Executing Party" or
+// "Old Plan Manager" elsewhere — those aliases would otherwise make the flow
+// look like it names more than two participants.
+// (2) when the whole flow still only ever names exactly two actors in total,
+// there is only one possible counterpart regardless of which step said it;
+// this catches a flow where no single step ever states both ends outright.
+// Either way the hop is flagged as inferred instead of being left half drawn.
 function part1CompleteHops(flow) {
     if (flow.source !== 'prose') return;
+
+    const resolvedPairs = flow.steps.filter(step => step.from && step.to);
+    // Only commits when every fully-named step that mentions this actor agrees
+    // on a single counterpart; a document with a genuine three-way exchange
+    // would disagree, and guessing wrong is worse than leaving it unindicated.
+    const counterpartOf = actor => {
+        const counterparts = new Set(resolvedPairs
+            .filter(step => step.from === actor || step.to === actor)
+            .map(step => (step.from === actor ? step.to : step.from)));
+        return counterparts.size === 1 ? [...counterparts][0] : '';
+    };
+    flow.steps.forEach(step => {
+        if (step.from && !step.to) {
+            const guess = counterpartOf(step.from);
+            if (guess) { step.to = guess; step.inferredTo = true; }
+        } else if (step.to && !step.from) {
+            const guess = counterpartOf(step.to);
+            if (guess) { step.from = guess; step.inferredFrom = true; }
+        }
+        step.actors = [step.from, step.to].filter(Boolean);
+    });
+
     const named = new Set();
     flow.steps.forEach(step => {
         if (step.from) named.add(step.from);
@@ -8780,15 +8810,27 @@ function schemaRenderNode(node) {
     }
 
     const isEnum = node.kind === 'leaf' && node.enumCodes.length > 0;
+    // A collapsed branch used to show "…" because counting meant resolving it,
+    // which read as "maybe there is nothing in here" and discouraged opening
+    // it. Resolving one level ahead — just enough to know how many properties
+    // live inside, without materialising or opening them — answers that
+    // without paying for a full expand: the grandchildren stay unresolved
+    // until this node itself is opened. The size budget still applies, so a
+    // pathologically large schema degrades back to "…" past that point.
+    if (!isEnum && !node.loaded && SchemaViewer.nodes.size <= SCHEMA_NODE_BUDGET) schemaNodeChildren(node);
     const openBrace = isEnum ? '[' : (node.isArray ? '[ {' : '{');
     const closeBrace = isEnum ? ']' : (node.isArray ? '} ]' : '}');
-    // A collapsed branch shows "…" because counting would mean resolving it.
     const count = isEnum ? node.enumCodes.length : (node.loaded ? (node.children || []).length : null);
     const leadType = isEnum
         ? `<span class="sch-type" title="${escapeHtml(schemaTypeTooltip(node))}">${escapeHtml(node.typeInfo.label)}</span>`
         : '';
+    // Known ahead of time now that resolution isn't deferred: shown here
+    // instead of only after the node is opened.
+    const recursiveBadge = !isEnum && node.recursive
+        ? '<span class="sch-badge sch-recursive" title="La estructura se repite: no se expande para evitar un esquema infinito">recursivo</span>'
+        : '';
     return `<div class="sch-node" ${attrs}>
-        <div class="sch-row">${schemaApiCheckboxHtml(node)}${schemaKeyHtml(node)}${leadType}${isEnum ? schemaCodeSetTagHtml(node) : ''}${schemaBadgesHtml(node)}</div>
+        <div class="sch-row">${schemaApiCheckboxHtml(node)}${schemaKeyHtml(node)}${leadType}${isEnum ? schemaCodeSetTagHtml(node) : ''}${schemaBadgesHtml(node)}${recursiveBadge}</div>
         ${schemaOpenLineHtml(node, openBrace, count, isEnum)}
         <div class="sch-children" data-loaded="false"></div>
         <div class="sch-close"><span class="sch-brace">${closeBrace}</span></div>
@@ -9119,6 +9161,19 @@ function schemaSetDepth(value) {
     // Collapse first so lowering the level actually folds the deeper branches.
     schemaCollapseAll();
     schemaExpandAll();
+}
+
+// Reported: clicking "Expandir" left nested properties (fields inside other
+// fields) closed. That was schemaExpandAll() honoring the "Nivel" selector,
+// which defaults to 4 — correct for that button, but not what a plain
+// "Expandir todo" is expected to do. This ignores the selector, expands to the
+// full depth (bounded only by the size budget) and syncs "Nivel" to "Todo" so
+// the toolbar keeps telling the truth about the tree's current state.
+function schemaExpandAllFull() {
+    SchemaViewer.maxDepth = 25;
+    const treeDepth = document.getElementById('schemaDepth');
+    if (treeDepth) treeDepth.value = '25';
+    schemaExpandAll(25);
 }
 
 function schemaToggleNameMode() {
