@@ -6292,7 +6292,14 @@ function elementStartX(lineEntry, elementName) {
 }
 
 function isType(s) {
-    return ['Text','DateTime','Date','CodeSet','Indicator','Amount','Quantity','Rate','Identifier','Boolean'].includes(s) || s === '\u00b1';
+    // Reported: "AnyBIC"/"LEI" rows carry "IdentifierSet" in the Type column (a
+    // choice among several identifier datatypes) but it was missing here, so the
+    // parser silently dropped it instead of recording it as this row's type \u2014
+    // the row then looked exactly like one with no Type column at all, which is
+    // this parser's signal for "this is a container, resolve its own structure",
+    // turning a plain string field into a phantom empty object in every view.
+    return ['Text','DateTime','Date','CodeSet','Indicator','Amount','Quantity','Rate',
+        'Identifier','IdentifierSet','Boolean'].includes(s) || s === '\u00b1';
 }
 
 // ===== NAVIGATION FUNCTIONS =====
@@ -7438,7 +7445,7 @@ function renderElementTable(elements, msgId, parentSection) {
         // Element name - always clickable for detail; special styling if it links to BB
         let nameHtml;
         const isComplexType = elem.type === '\u00b1' || (!elem.type && elem.refPage);
-        const isSimpleType = ['CodeSet','Text','DateTime','Date','Indicator','Boolean','Amount','Quantity','Rate','Identifier'].includes(elem.type);
+        const isSimpleType = ['CodeSet','Text','DateTime','Date','Indicator','Boolean','Amount','Quantity','Rate','Identifier','IdentifierSet'].includes(elem.type);
 
         if (isComplexType || (elem.refPage && !isSimpleType)) {
             nameHtml = `<span class="link-element" onclick="navigateToStructureByKey('${detailKey}')">${elem.name}</span>`;
@@ -8014,7 +8021,7 @@ function exportToExcel() {
 // ============================================================================
 
 const SCHEMA_SIMPLE_TYPES = ['Text', 'DateTime', 'Date', 'Time', 'CodeSet', 'Indicator', 'Boolean',
-    'Amount', 'Quantity', 'Rate', 'Identifier', 'Number', 'Decimal'];
+    'Amount', 'Quantity', 'Rate', 'Identifier', 'IdentifierSet', 'Number', 'Decimal'];
 
 const SCHEMA_JSON_TYPE_BY_KIND = {
     text: 'string', string: 'string', identifier: 'string', identifierset: 'string',
