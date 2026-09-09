@@ -738,6 +738,55 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 .sch-pane { flex:1; min-height:0; overflow:auto; padding:1rem 1.2rem 2rem; }
 .sch-tree { font-family:'Cascadia Code','Consolas','SFMono-Regular',monospace; font-size:0.8rem; line-height:1.55; }
 
+/* Generador de OpenAPI: panel lateral que aparece junto al árbol cuando el
+   modo de selección está activo. */
+#schemaBody.api-active { flex-direction:row; }
+#schemaBody.api-active .sch-pane { flex:1 1 50%; border-right:1px solid var(--border); }
+.api-panel { display:none; flex:1 1 420px; max-width:480px; min-width:320px; }
+#schemaBody.api-active .api-panel { display:flex; }
+.api-panel-inner { flex:1; min-height:0; width:100%; display:flex; flex-direction:column; gap:0.65rem; padding:0.9rem 1rem 1.1rem; overflow:auto; }
+.api-row { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap; }
+.api-row-label { font-size:0.72rem; color:var(--text-dim); }
+.api-kind-toggle { display:inline-flex; gap:0.3rem; }
+/* Icono "i": el texto largo que antes vivía como párrafo fijo ahora solo
+   aparece al pasar el cursor, vía el title= nativo del botón. */
+.api-info-btn { flex:0 0 auto; width:20px; height:20px; border-radius:50%; border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-dim); font-size:0.7rem; font-style:italic; font-family:Georgia,'Times New Roman',serif; line-height:1; cursor:help; display:inline-flex; align-items:center; justify-content:center; padding:0; }
+.api-info-btn:hover, .api-info-btn:focus-visible { border-color:var(--accent); color:var(--accent); outline:none; }
+.api-name-row { flex-direction:column; align-items:stretch; gap:0.25rem; }
+.api-name-input { padding:0.4rem 0.6rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; color:var(--text-primary); font-size:0.8rem; outline:none; font-family:inherit; }
+.api-name-input:focus { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-dim); }
+.api-fields-head { font-size:0.75rem; color:var(--text-dim); }
+.api-field-list { display:flex; flex-direction:column; gap:0.4rem; max-height:160px; overflow:auto; padding-right:0.15rem; }
+.api-empty { font-size:0.78rem; color:var(--text-dim); margin:0; }
+.api-field-row { display:flex; align-items:center; gap:0.4rem; padding:0.35rem 0.5rem; background:var(--bg-secondary); border:1px solid var(--border); border-radius:6px; font-size:0.74rem; }
+.api-field-path { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-secondary); }
+.api-field-req select { background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border); border-radius:5px; font-size:0.7rem; padding:0.15rem 0.3rem; font-family:inherit; }
+.api-field-remove { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:1rem; line-height:1; padding:0 0.2rem; }
+.api-field-remove:hover { color:var(--accent); }
+.api-tabs { display:flex; gap:0.3rem; border-top:1px solid var(--border); padding-top:0.6rem; }
+/* La caja de preview queda siempre en modo oscuro, tipo editor de código,
+   sin importar si el navegador está en tema claro u oscuro. */
+.api-preview-body { flex:1 1 auto; min-height:320px; display:flex; }
+.api-code-wrap { position:relative; flex:1; min-height:0; display:flex; }
+.api-code-wrap.hidden { display:none; }
+.api-code { flex:1; margin:0; padding:0.8rem 0.9rem; padding-top:2.2rem; background:#1e1e1e; border:1px solid #2b2d40; border-radius:8px; color:#d4d4d4; font-family:'Cascadia Code','Consolas','SFMono-Regular',monospace; font-size:0.78rem; line-height:1.6; white-space:pre-wrap; word-break:break-word; overflow:auto; min-height:320px; max-height:560px; }
+/* Resaltado de sintaxis dentro de las cajas de preview, con la paleta clásica
+   de un editor de código en oscuro: claves en azul, cadenas en salmón,
+   números en verde, booleanos/null en azul violeta, comentarios apagados. */
+.api-code .jk { color:#9cdcfe; }
+.api-code .js { color:#ce9178; }
+.api-code .jn { color:#b5cea8; }
+.api-code .jb, .api-code .jz { color:#569cd6; }
+.api-code .jp { color:#d4d4d4; }
+.api-code .jcm { color:#6a7180; font-style:italic; }
+.api-copy-btn { position:absolute; top:0.5rem; right:0.5rem; z-index:1; padding:0.3rem 0.6rem; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); color:#c9cce2; border-radius:6px; font-size:0.7rem; cursor:pointer; transition:background 0.15s, color 0.15s; }
+.api-copy-btn:hover { background:rgba(255,255,255,0.16); color:#fff; }
+.api-copy-btn.is-copied { background:rgba(61,220,132,0.18); border-color:rgba(61,220,132,0.5); color:#6fe3a4; }
+.api-actions-row { justify-content:flex-end; }
+.sch-select-box { display:none; align-items:center; margin-right:0.15rem; }
+.sch-tree.sch-api-mode .sch-select-box { display:inline-flex; }
+.sch-select-box input { width:14px; height:14px; cursor:pointer; accent-color:var(--accent); }
+
 /* Nodes */
 .sch-node { position:relative; }
 .sch-node.sch-hidden { display:none; }
@@ -1449,10 +1498,51 @@ body.theme-light .sch-node.sch-match > .sch-row, body.theme-light .sch-node.sch-
         <button type="button" class="btn-sch" id="schemaOnlyReqBtn" onclick="schemaToggleOnlyRequired()" title="Muestra solo campos obligatorios y las opciones de los grupos SelectOneOf">Solo obligatorios</button>
         <button type="button" class="btn-sch active" id="schemaMetaBtn" onclick="schemaToggleMeta()" title="Muestra u oculta multiplicidad y constraints">Metadatos</button>
       </span>
+      <span class="sch-toolbar-group">
+        <button type="button" class="btn-sch" id="apiBuilderBtn" onclick="apiToggleBuilder()" title="Marca los campos del árbol para armar el bloque components de un esquema OpenAPI (YAML), con preview en JSON">Generar OpenAPI</button>
+      </span>
     </div>
 
-    <div class="sch-body">
+    <div class="sch-body" id="schemaBody">
       <div class="sch-pane" id="schemaTreePane"></div>
+      <aside class="api-panel" id="apiPanel">
+        <div class="api-panel-inner">
+          <div class="api-row api-kind-row">
+            <span class="api-kind-toggle" role="group" aria-label="Tipo de esquema">
+              <button type="button" class="btn-sch active" id="apiKindRequestBtn" onclick="apiSetKind('request')">Request</button>
+              <button type="button" class="btn-sch" id="apiKindResponseBtn" onclick="apiSetKind('response')">Response</button>
+            </span>
+            <button type="button" class="api-info-btn" tabindex="0" aria-label="Cómo se agrupan los campos"
+                title="Marca las casillas del árbol. Un campo anidado cuyos padres no estén marcados se agrupa bajo el ancestro seleccionado más cercano (o en la raíz, si ninguno lo está).">i</button>
+          </div>
+          <label class="api-row api-name-row">
+            <span class="api-row-label">Nombre del schema</span>
+            <input type="text" id="apiSchemaName" class="api-name-input" oninput="apiRenderPanel()" autocomplete="off" />
+          </label>
+          <div class="api-row api-fields-head">
+            <span id="apiFieldCount">0 campos seleccionados</span>
+            <button type="button" class="btn-sch" onclick="apiClearAll()">Vaciar selección</button>
+          </div>
+          <div class="api-field-list" id="apiFieldList"></div>
+          <div class="api-tabs" role="tablist">
+            <button type="button" class="btn-sch active" id="apiTabJsonBtn" onclick="apiSwitchTab('json')" role="tab" aria-selected="true">Preview JSON</button>
+            <button type="button" class="btn-sch" id="apiTabYamlBtn" onclick="apiSwitchTab('yaml')" role="tab" aria-selected="false">YAML (components)</button>
+          </div>
+          <div class="api-preview-body">
+            <div class="api-code-wrap" id="apiJsonWrap">
+              <button type="button" class="api-copy-btn" id="apiCopyJsonBtn" onclick="apiCopyText('json', this)" title="Copiar el JSON">Copiar</button>
+              <pre class="api-code" id="apiJsonPreview"></pre>
+            </div>
+            <div class="api-code-wrap hidden" id="apiYamlWrap">
+              <button type="button" class="api-copy-btn" id="apiCopyYamlBtn" onclick="apiCopyText('yaml', this)" title="Copiar el YAML">Copiar</button>
+              <pre class="api-code" id="apiYamlOutput"></pre>
+            </div>
+          </div>
+          <div class="api-row api-actions-row">
+            <button type="button" class="btn-sch" onclick="apiDownloadYaml()">Descargar YAML</button>
+          </div>
+        </div>
+      </aside>
     </div>
 
     <footer class="sch-foot">
@@ -8599,7 +8689,7 @@ function schemaRenderNode(node) {
 
     if (!node.expandable) {
         return `<div class="sch-node" ${attrs}>
-            <div class="sch-row">${schemaKeyHtml(node)}<span class="sch-type" title="${escapeHtml(schemaTypeTooltip(node))}">${escapeHtml(node.typeInfo.label)}</span>${schemaCodeSetTagHtml(node)}${schemaBadgesHtml(node)}</div>
+            <div class="sch-row">${schemaApiCheckboxHtml(node)}${schemaKeyHtml(node)}<span class="sch-type" title="${escapeHtml(schemaTypeTooltip(node))}">${escapeHtml(node.typeInfo.label)}</span>${schemaCodeSetTagHtml(node)}${schemaBadgesHtml(node)}</div>
         </div>`;
     }
 
@@ -8612,7 +8702,7 @@ function schemaRenderNode(node) {
         ? `<span class="sch-type" title="${escapeHtml(schemaTypeTooltip(node))}">${escapeHtml(node.typeInfo.label)}</span>`
         : '';
     return `<div class="sch-node" ${attrs}>
-        <div class="sch-row">${schemaKeyHtml(node)}${leadType}${isEnum ? schemaCodeSetTagHtml(node) : ''}${schemaBadgesHtml(node)}</div>
+        <div class="sch-row">${schemaApiCheckboxHtml(node)}${schemaKeyHtml(node)}${leadType}${isEnum ? schemaCodeSetTagHtml(node) : ''}${schemaBadgesHtml(node)}</div>
         ${schemaOpenLineHtml(node, openBrace, count, isEnum)}
         <div class="sch-children" data-loaded="false"></div>
         <div class="sch-close"><span class="sch-brace">${closeBrace}</span></div>
@@ -8991,6 +9081,7 @@ function schemaResetSession(msgId) {
     SchemaViewer.matches = [];
     SchemaViewer.matchIndex = -1;
     schemaHideTip();
+    apiResetSession();
 }
 
 function openMessageSchema(msgId) {
@@ -9066,6 +9157,536 @@ function closeSchemaViewer() {
     overlay.classList.add('hidden');
     SchemaViewer.open = false;
     if (SchemaViewer.lastFocus && SchemaViewer.lastFocus.focus) SchemaViewer.lastFocus.focus();
+}
+
+// ============================================================================
+// Generador de OpenAPI: se activa desde el propio Visor de esquema JSON.
+// Cada fila del árbol gana una casilla; lo marcado se agrupa bajo el ancestro
+// seleccionado más cercano (los niveles intermedios sin marcar se saltan, y si
+// ninguno está marcado el campo cuelga directo de la raíz) y alimenta dos
+// vistas del panel lateral: un preview en JSON de la forma del payload y el
+// bloque `components` en YAML, listo para pegar en un documento OpenAPI de
+// request o de response.
+// ============================================================================
+
+// Un CodeSet corto (estados, tipos de cuenta...) se vuelca completo en el
+// enum; uno externo grande (divisas, países) solo se referencia por nombre
+// para no inflar el YAML con cientos de códigos.
+const API_ENUM_INLINE_LIMIT = 60;
+
+const ApiBuilder = {
+    active: false,
+    kind: 'request', // 'request' | 'response'
+    tab: 'json', // 'json' | 'yaml'
+    // nodeId -> { path: [nodeId,...] desde la raíz hasta este nodo, required: null|true|false }
+    selected: new Map()
+};
+
+function apiResetSession() {
+    ApiBuilder.active = false;
+    ApiBuilder.selected = new Map();
+    const body = document.getElementById('schemaBody');
+    if (body) body.classList.remove('api-active');
+    const button = document.getElementById('apiBuilderBtn');
+    if (button) button.classList.remove('active');
+}
+
+// La ruta se calcula sobre el DOM ya materializado: solo se puede marcar la
+// casilla de un campo que está a la vista, así que sus ancestros ya existen
+// como nodos `.sch-node` reales en el árbol.
+function apiNodeChain(nodeId) {
+    const chain = [];
+    let current = document.getElementById(nodeId);
+    while (current) {
+        if (current.classList && current.classList.contains('sch-node') && current.id) chain.unshift(current.id);
+        current = current.parentElement;
+    }
+    return chain;
+}
+
+// El usuario pidió nombres largos del MDR en todo el esquema generado, sin
+// importar si el árbol está en modo "Nombre largo" o "XML tag".
+function apiFieldLabel(node) {
+    return (node && (node.name || node.tag)) || '';
+}
+
+function schemaApiCheckboxHtml(node) {
+    if (node.kind === 'document') return '';
+    const checked = ApiBuilder.selected.has(node.id) ? 'checked' : '';
+    const label = escapeHtml(node.name || node.tag || '');
+    return `<label class="sch-select-box" onclick="event.stopPropagation()" title="Incluir en el esquema OpenAPI">
+        <input type="checkbox" ${checked} onchange="apiToggleSelect('${node.id}', this.checked)" aria-label="Incluir ${label} en el esquema OpenAPI" />
+    </label>`;
+}
+
+function apiToggleBuilder() {
+    ApiBuilder.active = !ApiBuilder.active;
+    const body = document.getElementById('schemaBody');
+    const tree = document.querySelector('#schemaTreePane .sch-tree');
+    const button = document.getElementById('apiBuilderBtn');
+    if (body) body.classList.toggle('api-active', ApiBuilder.active);
+    if (tree) tree.classList.toggle('sch-api-mode', ApiBuilder.active);
+    if (button) button.classList.toggle('active', ApiBuilder.active);
+    if (ApiBuilder.active) apiRenderPanel();
+}
+
+function apiToggleSelect(nodeId, checked) {
+    if (checked) {
+        ApiBuilder.selected.set(nodeId, { path: apiNodeChain(nodeId), required: null });
+    } else {
+        ApiBuilder.selected.delete(nodeId);
+    }
+    apiRenderPanel();
+}
+
+function apiSetRequired(nodeId, value) {
+    const entry = ApiBuilder.selected.get(nodeId);
+    if (!entry) return;
+    entry.required = value === 'auto' ? null : value === 'true';
+    apiRenderPanel();
+}
+
+function apiRemoveField(nodeId) {
+    ApiBuilder.selected.delete(nodeId);
+    const element = document.getElementById(nodeId);
+    const box = element ? element.querySelector(':scope > .sch-row .sch-select-box input') : null;
+    if (box) box.checked = false;
+    apiRenderPanel();
+}
+
+function apiClearAll() {
+    document.querySelectorAll('#schemaTreePane .sch-select-box input:checked').forEach(box => { box.checked = false; });
+    ApiBuilder.selected.clear();
+    apiRenderPanel();
+}
+
+function apiSetKind(kind) {
+    ApiBuilder.kind = kind === 'response' ? 'response' : 'request';
+    const reqBtn = document.getElementById('apiKindRequestBtn');
+    const resBtn = document.getElementById('apiKindResponseBtn');
+    if (reqBtn) reqBtn.classList.toggle('active', ApiBuilder.kind === 'request');
+    if (resBtn) resBtn.classList.toggle('active', ApiBuilder.kind === 'response');
+    apiRenderPanel();
+}
+
+function apiSwitchTab(tab) {
+    ApiBuilder.tab = tab === 'yaml' ? 'yaml' : 'json';
+    const jsonBtn = document.getElementById('apiTabJsonBtn');
+    const yamlBtn = document.getElementById('apiTabYamlBtn');
+    const jsonWrap = document.getElementById('apiJsonWrap');
+    const yamlWrap = document.getElementById('apiYamlWrap');
+    if (jsonBtn) { jsonBtn.classList.toggle('active', ApiBuilder.tab === 'json'); jsonBtn.setAttribute('aria-selected', String(ApiBuilder.tab === 'json')); }
+    if (yamlBtn) { yamlBtn.classList.toggle('active', ApiBuilder.tab === 'yaml'); yamlBtn.setAttribute('aria-selected', String(ApiBuilder.tab === 'yaml')); }
+    if (jsonWrap) jsonWrap.classList.toggle('hidden', ApiBuilder.tab !== 'json');
+    if (yamlWrap) yamlWrap.classList.toggle('hidden', ApiBuilder.tab !== 'yaml');
+}
+
+// ===== Árbol de selección =====
+// Cada campo marcado cuelga de su ancestro marcado más cercano; si ninguno de
+// sus ancestros está marcado, cuelga directo de la raíz del esquema.
+function apiBuildSelectionTree() {
+    const byId = new Map();
+    const topLevel = [];
+    const topSeen = new Set();
+    ApiBuilder.selected.forEach((info, nodeId) => {
+        const node = SchemaViewer.nodes.get(nodeId);
+        if (!node) return;
+        const chain = (info.path && info.path.length ? info.path : [nodeId])
+            .filter(id => id === nodeId || ApiBuilder.selected.has(id));
+        for (let i = 0; i < chain.length; i++) {
+            const id = chain[i];
+            if (!byId.has(id)) {
+                const chainNode = SchemaViewer.nodes.get(id);
+                if (!chainNode) continue;
+                byId.set(id, { id, node: chainNode, children: new Map() });
+            }
+            if (i === 0) {
+                if (!topSeen.has(id)) { topSeen.add(id); topLevel.push(byId.get(id)); }
+            } else {
+                const parentSel = byId.get(chain[i - 1]);
+                if (parentSel && !parentSel.children.has(id)) parentSel.children.set(id, byId.get(id));
+            }
+        }
+    });
+    return topLevel;
+}
+
+// Evita que dos campos que caen en el mismo nivel con el mismo nombre largo
+// (dos ramas distintas cuyos padres intermedios quedaron sin marcar) se pisen.
+function apiUniqueKey(properties, name) {
+    const base = name || 'campo';
+    if (!(base in properties)) return base;
+    let suffix = 2;
+    while (`${base}_${suffix}` in properties) suffix++;
+    return `${base}_${suffix}`;
+}
+
+// ===== Tipo y ejemplo de un campo simple =====
+function apiAppendNote(existing, note) {
+    if (!note) return existing;
+    return existing ? `${existing} ${note}` : note;
+}
+
+function apiLeafSchema(node) {
+    const t = node.typeInfo || {};
+    const schema = { type: t.jsonType || 'string' };
+    if (t.jsonFormat) schema.format = t.jsonFormat;
+    if (t.pattern) schema.pattern = t.pattern;
+    if (schema.type === 'string') {
+        if (t.length) { schema.minLength = t.length; schema.maxLength = t.length; }
+        else {
+            if (t.minLength) schema.minLength = t.minLength;
+            if (t.maxLength) schema.maxLength = t.maxLength;
+        }
+    }
+    if (schema.type === 'number' && t.fractionDigits) {
+        schema.multipleOf = Number(Math.pow(10, -t.fractionDigits).toFixed(t.fractionDigits));
+    }
+    if (t.codes && t.codes.length) {
+        if (t.codes.length <= API_ENUM_INLINE_LIMIT) schema.enum = t.codes.map(code => code.code);
+        else schema.description = apiAppendNote(schema.description,
+            `CodeSet ${t.datatypeName || ''}: ${t.codes.length} valores (no se listan aquí; ver el set de códigos en el navegador).`);
+    }
+    if (node.definition) schema.description = apiAppendNote(schema.description, node.definition);
+    if (node.isOr) schema.description = apiAppendNote(schema.description,
+        `Grupo de elección ${node.orGroup} (SelectOneOf): se envía solo uno de los campos de este grupo.`);
+    return schema;
+}
+
+function apiIsRequired(node) {
+    const entry = ApiBuilder.selected.get(node.id);
+    if (entry && entry.required !== null && entry.required !== undefined) return entry.required;
+    return Boolean(node.required);
+}
+
+// La clave "ref" de OpenAPI (con signo de dólar) se arma en tiempo de
+// ejecución porque el validador de handlers del proyecto asume que cualquier
+// identificador con ese signo delante es una referencia DOM cacheada, y esta
+// no lo es.
+const OPENAPI_REF_KEY = '$' + 'ref';
+
+// El schema "propio" de un nodo seleccionado: un objeto con las propiedades de
+// sus hijos marcados, o el tipo simple si es una hoja. No decide si va como
+// referencia a otro schema ni si se envuelve en array; eso lo resuelve
+// apiPropertySchema().
+function apiOwnSchema(selNode, components) {
+    const node = selNode.node;
+    if (!node.complex) return apiLeafSchema(node);
+    const properties = {};
+    const required = [];
+    selNode.children.forEach(child => {
+        const propName = apiUniqueKey(properties, apiFieldLabel(child.node) || child.id);
+        properties[propName] = apiPropertySchema(child, components);
+        if (apiIsRequired(child.node)) required.push(propName);
+    });
+    const body = { type: 'object' };
+    if (node.definition) body.description = node.definition;
+    body.properties = properties;
+    if (required.length) body.required = required;
+    if (!Object.keys(properties).length) {
+        body.description = apiAppendNote(body.description,
+            'No se marcó ningún campo interno: se deja como objeto sin propiedades definidas.');
+    }
+    return body;
+}
+
+// El schema que va dentro de la propiedad del padre: una referencia a otro
+// schema cuando el nodo resuelve a un MessageComponent reutilizable de ISO
+// 20022, o el objeto anidado directo cuando no hay un nombre de componente
+// que lo respalde.
+function apiPropertySchema(selNode, components) {
+    const node = selNode.node;
+    let itemSchema;
+    const componentInfo = node.complex ? schemaComponentInfo(node) : null;
+    if (componentInfo && componentInfo.name) {
+        const key = apiRegisterComponent(componentInfo.name, selNode, components);
+        itemSchema = { [OPENAPI_REF_KEY]: `#/components/schemas/${key}` };
+    } else {
+        itemSchema = apiOwnSchema(selNode, components);
+    }
+    if (node.isArray) {
+        const arraySchema = { type: 'array', items: itemSchema };
+        if (node.min > 0) arraySchema.minItems = node.min;
+        if (Number.isFinite(node.max)) arraySchema.maxItems = node.max;
+        return arraySchema;
+    }
+    return itemSchema;
+}
+
+// Un mismo MessageComponent (p. ej. PartyIdentification272) puede aparecer en
+// más de una rama con una selección de campos distinta: se reutiliza el mismo
+// nombre solo si el contenido generado es idéntico; si no, se numera.
+function apiRegisterComponent(name, selNode, components) {
+    const built = apiOwnSchema(selNode, components);
+    const serialized = JSON.stringify(built);
+    let key = name;
+    let suffix = 2;
+    while (components.schemas[key] && components.hashes.get(key) !== serialized) key = `${name}_${suffix++}`;
+    if (!components.schemas[key]) {
+        components.schemas[key] = built;
+        components.hashes.set(key, serialized);
+    }
+    return key;
+}
+
+function apiSchemaBaseName() {
+    const base = String((SchemaViewer && SchemaViewer.msgId) || 'Message')
+        .split(/[^A-Za-z0-9]+/).filter(Boolean)
+        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('');
+    return base || 'Message';
+}
+
+function apiDefaultSchemaName() {
+    return apiSchemaBaseName() + (ApiBuilder.kind === 'response' ? 'Response' : 'Request');
+}
+
+function apiSchemaName() {
+    const input = document.getElementById('apiSchemaName');
+    const custom = input && input.value ? input.value.trim() : '';
+    return custom || apiDefaultSchemaName();
+}
+
+// El bloque `components.schemas` completo: la raíz elegida más cualquier
+// MessageComponent que haya quedado registrado por el camino.
+function apiBuildComponents() {
+    const components = { schemas: {}, hashes: new Map() };
+    const topLevel = apiBuildSelectionTree();
+    const properties = {};
+    const required = [];
+    topLevel.forEach(selNode => {
+        const propName = apiUniqueKey(properties, apiFieldLabel(selNode.node) || selNode.id);
+        properties[propName] = apiPropertySchema(selNode, components);
+        if (apiIsRequired(selNode.node)) required.push(propName);
+    });
+    const rootBody = { type: 'object', properties };
+    if (required.length) rootBody.required = required;
+    components.schemas[apiSchemaName()] = rootBody;
+    return components.schemas;
+}
+
+// ===== Preview JSON =====
+// La misma agrupación que el YAML, pero con un valor de ejemplo en vez de un
+// tipo, y siempre anidada: la referencia a otro schema es un detalle del
+// YAML, no del JSON que de verdad viaja en el mensaje.
+function apiSampleLeaf(node) {
+    const t = node.typeInfo || {};
+    if (t.codes && t.codes.length) return t.codes[0].code;
+    if (t.jsonFormat === 'date-time') return '2024-01-01T00:00:00Z';
+    if (t.jsonFormat === 'date') return '2024-01-01';
+    if (t.jsonFormat === 'time') return '00:00:00';
+    if (t.jsonType === 'number') return 0;
+    if (t.jsonType === 'boolean') return true;
+    return t.datatypeName ? `<${t.datatypeName}>` : 'string';
+}
+
+function apiSampleValue(selNode) {
+    const node = selNode.node;
+    let value;
+    if (node.complex) {
+        const obj = {};
+        selNode.children.forEach(child => {
+            const key = apiUniqueKey(obj, apiFieldLabel(child.node) || child.id);
+            obj[key] = apiSampleValue(child);
+        });
+        value = obj;
+    } else {
+        value = apiSampleLeaf(node);
+    }
+    return node.isArray ? [value] : value;
+}
+
+function apiBuildSample() {
+    const topLevel = apiBuildSelectionTree();
+    const obj = {};
+    topLevel.forEach(selNode => {
+        const key = apiUniqueKey(obj, apiFieldLabel(selNode.node) || selNode.id);
+        obj[key] = apiSampleValue(selNode);
+    });
+    return obj;
+}
+
+// ===== Serializador YAML mínimo =====
+// Solo lo que un schema OpenAPI necesita (mapas, listas, cadenas, números y
+// booleanos), sin anclas ni referencias: basta y sobra para `components`.
+function apiYamlScalar(value) {
+    if (value === null || value === undefined) return 'null';
+    if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+    const text = String(value);
+    if (text === '') return "''";
+    const needsQuotes = /^\s|\s$|^[-?:,\[\]{}#&*!|>'"%@`]|:( |$)|[\n\t]|^(true|false|null|~)$|^-?\d+(\.\d+)?$/i.test(text);
+    if (!needsQuotes) return text;
+    return `"${text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+}
+
+function apiYamlNode(value, indent) {
+    const pad = '  '.repeat(indent);
+    if (Array.isArray(value)) {
+        if (!value.length) return ' []\n';
+        return '\n' + value.map(item => {
+            if (item && typeof item === 'object') {
+                const inner = apiYamlNode(item, indent + 1).replace(/^\n/, '');
+                return `${pad}- ${inner}`;
+            }
+            return `${pad}- ${apiYamlScalar(item)}\n`;
+        }).join('');
+    }
+    if (value && typeof value === 'object') {
+        const keys = Object.keys(value);
+        if (!keys.length) return ' {}\n';
+        return '\n' + keys.map(key => {
+            const child = value[key];
+            const head = `${pad}${apiYamlScalar(key)}:`;
+            if (child && typeof child === 'object' && Object.keys(child).length) return `${head}${apiYamlNode(child, indent + 1)}`;
+            return `${head} ${apiYamlScalar(child)}\n`;
+        }).join('');
+    }
+    return ` ${apiYamlScalar(value)}\n`;
+}
+
+function apiToYaml(rootObject) {
+    return apiYamlNode(rootObject, 0).replace(/^\n/, '');
+}
+
+// ===== Resaltado de sintaxis en las cajas de preview =====
+// Solo se escapan &, < y > (las comillas se dejan tal cual): el resultado va
+// como contenido de texto dentro de <pre>, donde una comilla suelta no
+// necesita escaparse, y así el regex que reconoce cadenas sigue funcionando
+// sobre el texto ya escapado.
+function apiEscapeForHighlight(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function apiHighlightJson(text) {
+    const escaped = apiEscapeForHighlight(text);
+    return escaped.replace(
+        /("(?:\\u[0-9a-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|\btrue\b|\bfalse\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+        match => {
+            let cls = 'jn';
+            if (/^"/.test(match)) cls = /:\s*$/.test(match) ? 'jk' : 'js';
+            else if (match === 'true' || match === 'false') cls = 'jb';
+            else if (match === 'null') cls = 'jz';
+            return `<span class="${cls}">${match}</span>`;
+        }
+    );
+}
+
+function apiHighlightYamlScalar(value) {
+    if (!value) return '';
+    const esc = apiEscapeForHighlight(value);
+    if (/^".*"$/.test(value)) return `<span class="js">${esc}</span>`;
+    if (value === 'true' || value === 'false') return `<span class="jb">${esc}</span>`;
+    if (value === 'null') return `<span class="jz">${esc}</span>`;
+    if (/^-?\d+(\.\d+)?$/.test(value)) return `<span class="jn">${esc}</span>`;
+    return `<span class="js">${esc}</span>`;
+}
+
+function apiHighlightYaml(text) {
+    return text.split('\n').map(line => {
+        if (line.trim().startsWith('#')) return `<span class="jcm">${apiEscapeForHighlight(line)}</span>`;
+        const keyed = line.match(/^(\s*(?:-\s+)?)([^\s:][^:]*)(:)(\s+.*|\s*)$/);
+        if (keyed) {
+            const [, indent, key, colon, rest] = keyed;
+            const leadSpace = rest.match(/^\s*/)[0];
+            const value = rest.slice(leadSpace.length);
+            return `${apiEscapeForHighlight(indent)}<span class="jk">${apiEscapeForHighlight(key)}</span>`
+                + `<span class="jp">${colon}</span>${leadSpace}${apiHighlightYamlScalar(value)}`;
+        }
+        const listed = line.match(/^(\s*-\s+)(.*)$/);
+        if (listed) return `${apiEscapeForHighlight(listed[1])}${apiHighlightYamlScalar(listed[2])}`;
+        return apiEscapeForHighlight(line);
+    }).join('\n');
+}
+
+// ===== Panel lateral =====
+function apiFieldListHtml() {
+    if (!ApiBuilder.selected.size) {
+        return '<p class="api-empty">Marca las casillas del árbol para elegir los campos del esquema.</p>';
+    }
+    const rows = [];
+    ApiBuilder.selected.forEach((info, nodeId) => {
+        const node = SchemaViewer.nodes.get(nodeId);
+        if (!node) return;
+        const breadcrumb = (info.path && info.path.length ? info.path : [nodeId])
+            .map(id => apiFieldLabel(SchemaViewer.nodes.get(id)))
+            .filter(Boolean).join(' › ');
+        const current = info.required === null || info.required === undefined ? 'auto' : String(info.required);
+        rows.push(`<div class="api-field-row">
+            <span class="api-field-path" title="${escapeHtml(breadcrumb)}">${escapeHtml(breadcrumb)}</span>
+            <label class="api-field-req">
+                <select onchange="apiSetRequired('${nodeId}', this.value)" aria-label="Obligatoriedad de ${escapeHtml(breadcrumb)}">
+                    <option value="auto" ${current === 'auto' ? 'selected' : ''}>MDR (${node.required ? 'oblig.' : 'opc.'})</option>
+                    <option value="true" ${current === 'true' ? 'selected' : ''}>Obligatorio</option>
+                    <option value="false" ${current === 'false' ? 'selected' : ''}>Opcional</option>
+                </select>
+            </label>
+            <button type="button" class="api-field-remove" onclick="apiRemoveField('${nodeId}')" title="Quitar del esquema" aria-label="Quitar ${escapeHtml(breadcrumb)}">&times;</button>
+        </div>`);
+    });
+    return rows.join('');
+}
+
+function apiRenderPanel() {
+    if (!ApiBuilder.active) return;
+    const list = document.getElementById('apiFieldList');
+    const count = document.getElementById('apiFieldCount');
+    const jsonPre = document.getElementById('apiJsonPreview');
+    const yamlPre = document.getElementById('apiYamlOutput');
+    const nameInput = document.getElementById('apiSchemaName');
+    if (list) list.innerHTML = apiFieldListHtml();
+    if (count) count.textContent = `${ApiBuilder.selected.size} campo${ApiBuilder.selected.size === 1 ? '' : 's'} seleccionado${ApiBuilder.selected.size === 1 ? '' : 's'}`;
+    if (nameInput && !nameInput.value) nameInput.placeholder = apiDefaultSchemaName();
+    if (jsonPre) {
+        if (ApiBuilder.selected.size) {
+            jsonPre.innerHTML = apiHighlightJson(JSON.stringify(apiBuildSample(), null, 2));
+        } else {
+            jsonPre.textContent = '// selecciona campos en el árbol para ver el preview';
+        }
+    }
+    if (yamlPre) {
+        if (ApiBuilder.selected.size) {
+            try {
+                yamlPre.innerHTML = apiHighlightYaml(apiToYaml({ components: { schemas: apiBuildComponents() } }));
+            } catch (error) {
+                yamlPre.textContent = `# error generando el YAML: ${error.message}`;
+            }
+        } else {
+            yamlPre.textContent = '# selecciona campos en el árbol para generar el esquema';
+        }
+    }
+}
+
+// Cada caja de preview trae su propio botón: copia siempre lo que esa caja
+// muestra (json o yaml), sin depender de cuál pestaña está activa.
+function apiCopyText(tab, buttonEl) {
+    const el = document.getElementById(tab === 'yaml' ? 'apiYamlOutput' : 'apiJsonPreview');
+    const text = el ? el.textContent : '';
+    if (!text || !navigator.clipboard) return;
+    navigator.clipboard.writeText(text).then(() => {
+        if (!buttonEl) return;
+        const original = buttonEl.textContent;
+        buttonEl.textContent = 'Copiado';
+        buttonEl.classList.add('is-copied');
+        clearTimeout(buttonEl.__apiCopyTimer);
+        buttonEl.__apiCopyTimer = setTimeout(() => {
+            buttonEl.textContent = original;
+            buttonEl.classList.remove('is-copied');
+        }, 1200);
+    }).catch(() => {});
+}
+
+function apiDownloadYaml() {
+    if (!ApiBuilder.selected.size) return;
+    const text = apiToYaml({ components: { schemas: apiBuildComponents() } });
+    const blob = new Blob([text], { type: 'text/yaml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${apiSchemaName()}.yaml`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 document.addEventListener('keydown', event => {

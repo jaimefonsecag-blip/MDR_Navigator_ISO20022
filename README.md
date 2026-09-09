@@ -30,6 +30,11 @@ convierte en un enlace directo a su estructura técnica.
 - Árbol de building blocks con despliegue progresivo
 - Explorador de elementos con multiplicidad, tipos, CodeSets y constraints
 - Visor de esquema JSON del mensaje, con presencia y grupos `SelectOneOf`
+- Generador de OpenAPI desde ese mismo visor: se marcan los campos con una
+  casilla y se arma el bloque `components` en YAML (request o response), con
+  preview en JSON. Un campo anidado sin su padre marcado se agrupa bajo el
+  ancestro seleccionado más cercano, y un MessageComponent reutilizable
+  (`PartyIdentification272`...) se separa en su propio schema con `$ref`.
 - Exportación a Excel del diccionario de mensajes y CodeSets
 
 **Traducción al español** de la prosa del MDR, con un glosario ISO 20022 propio
@@ -59,7 +64,7 @@ npm install   # solo para poder ejecutar las verificaciones
 npm run check
 ```
 
-`npm run check` valida nueve cosas:
+`npm run check` valida diez cosas:
 
 | Verificación | Qué comprueba |
 |---|---|
@@ -70,6 +75,7 @@ npm run check
 | `check-reset` | Volver al inicio limpia todo el estado del parseo y libera los blobs de los diagramas |
 | `check-workspace` | La vista combinada: cada mitad pinta en su panel y las dos se sincronizan sin bucles |
 | `check-schema` | La frase `contains` del MDR y la referencia al MessageComponent del esquema JSON |
+| `check-api-builder` | El generador de OpenAPI: agrupación por ancestro seleccionado, cardinalidad y override de `required`, extracción de MessageComponents a `$ref` y el YAML resultante |
 | `check-external-codes` | Lee el Excel real de códigos externos: hoja, columnas, códigos retirados y cableado |
 | `check-docx-parser` | Ejecuta el parser DOCX real contra un MDR de ejemplo y valida secciones, diagramas, tablas, actores y flujos |
 
