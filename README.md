@@ -64,7 +64,7 @@ npm install   # solo para poder ejecutar las verificaciones
 npm run check
 ```
 
-`npm run check` valida diez cosas:
+`npm run check` valida trece cosas:
 
 | Verificación | Qué comprueba |
 |---|---|
@@ -76,6 +76,9 @@ npm run check
 | `check-workspace` | La vista combinada: cada mitad pinta en su panel y las dos se sincronizan sin bucles |
 | `check-schema` | La frase `contains` del MDR y la referencia al MessageComponent del esquema JSON |
 | `check-api-builder` | El generador de OpenAPI: agrupación por ancestro seleccionado, cardinalidad y override de `required`, extracción de MessageComponents a `$ref` y el YAML resultante |
+| `check-pdf-perf` | Que la resolución de datatypes por índice (usada para acelerar PDFs de miles de páginas) devuelva exactamente lo mismo que el escaneo completo original |
+| `check-schema-expand` | Que "Expandir todo" en el visor de esquema abra exactamente los mismos nodos que el algoritmo original, sin volver a escanear el árbol completo en cada nivel |
+| `check-bb-dedup` | Que el árbol de building blocks no repita un campo con un placeholder "±" cuando ya existe la versión que referencia su MessageComponent |
 | `check-external-codes` | Lee el Excel real de códigos externos: hoja, columnas, códigos retirados y cableado |
 | `check-docx-parser` | Ejecuta el parser DOCX real contra un MDR de ejemplo y valida secciones, diagramas, tablas, actores y flujos |
 

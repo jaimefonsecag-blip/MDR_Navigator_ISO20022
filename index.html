@@ -4010,10 +4010,17 @@ async function startProcessing(file) {
 
         let currentMsgId = '', currentMsgName = '';
         let currentBB = null; // current building block context
+        // Yielding every N pages meant ~1700 forced setTimeout(0) round trips on
+        // a 5000-page document, each one clamped by the browser's minimum timer
+        // delay; timing the yield instead keeps the progress bar just as
+        // responsive while cutting that overhead on huge documents.
+        let lastYield = performance.now();
 
         for (let i = 1; i <= totalPages; i++) {
-            if (i % 3 === 0 || i === 1) {
+            const now = performance.now();
+            if (i === 1 || now - lastYield >= 120) {
                 updateProgress(5 + Math.round((i / totalPages) * 90), `Procesando pagina ${i}/${totalPages}...`);
+                lastYield = now;
                 await new Promise(r => setTimeout(r, 0));
             }
             const page = await pdf.getPage(i);
@@ -4022,6 +4029,11 @@ async function startProcessing(file) {
             currentMsgId = result.msgId;
             currentMsgName = result.msgName;
             currentBB = result.bb;
+            // Without this, pdf.js keeps every page's font and glyph caches
+            // resident; on a 5000+ page document that resident memory keeps
+            // growing for the whole run and GC pressure slows pages down as it
+            // goes, so each page's resources are freed once its text is in hand.
+            if (typeof page.cleanup === 'function') page.cleanup();
         }
 
         finalizeFunctionalitySection();
@@ -4633,9 +4645,19 @@ function catalogBaseName(value) {
     return normalizeCatalogName(value).replace(/\d+$/, '');
 }
 
+// registerBlockDefinition()/getBlockDefinition() run once per detailed-block
+// header and several times per line while a page is parsed, so for a document
+// with thousands of definitions (a 5000+ page Part 2 like Investment Funds)
+// a linear .find() by id turned every one of those lookups into an O(n) scan
+// over an array that keeps growing — effectively quadratic in the number of
+// definitions. BLOCK_DEFINITIONS_BY_ID mirrors the array as an id -> entry
+// map so both stay O(1); resetPart2State() clears it in lockstep with
+// MDR.blockDefinitions.
+let BLOCK_DEFINITIONS_BY_ID = new Map();
+
 function registerBlockDefinition(section, name, tag, page) {
     const id = [section, page, normalizeCatalogName(name), String(tag || '').toLowerCase()].join('|');
-    let definition = MDR.blockDefinitions.find(item => item.id === id);
+    let definition = BLOCK_DEFINITIONS_BY_ID.get(id);
     if (!definition) {
         definition = {
             id, section, name, tag: tag || '', page,
@@ -4646,12 +4668,13 @@ function registerBlockDefinition(section, name, tag, page) {
             componentTypeName: '', componentTypePage: null
         };
         MDR.blockDefinitions.push(definition);
+        BLOCK_DEFINITIONS_BY_ID.set(id, definition);
     }
     return definition;
 }
 
 function getBlockDefinition(id) {
-    return MDR.blockDefinitions.find(definition => definition.id === id) || null;
+    return BLOCK_DEFINITIONS_BY_ID.get(id) || null;
 }
 
 function buildDefinitionIndexes() {
@@ -5027,6 +5050,40 @@ function ensureStructureBlock(msgId, element, definition) {
     return block;
 }
 
+// findDetailedElementDefinition() is called for every CodeSet element in the
+// document (resolveCodeSetMappings runs it up to twice per element), and used
+// to re-filter and re-score the ENTIRE global block-definition catalogue each
+// time. A definition only ever "matches" (see below) by an exact tag or exact
+// name hit, so it can only ever come from one of those two buckets — indexing
+// both once turns a document-wide scan per element into a lookup of the
+// handful of definitions that share this element's tag or name. The index is
+// rebuilt only when MDR.blockDefinitions has actually changed since last time.
+let DATATYPE_DEFINITION_INDEX = { source: null, length: -1, byTag: new Map(), byName: new Map() };
+
+function datatypeDefinitionIndex() {
+    const source = MDR.blockDefinitions;
+    if (DATATYPE_DEFINITION_INDEX.source === source && DATATYPE_DEFINITION_INDEX.length === source.length) {
+        return DATATYPE_DEFINITION_INDEX;
+    }
+    const byTag = new Map();
+    const byName = new Map();
+    source.forEach(definition => {
+        if (!definition.datatypeName) return;
+        const tagKey = String(definition.tag || '').toLowerCase();
+        if (tagKey) {
+            if (!byTag.has(tagKey)) byTag.set(tagKey, []);
+            byTag.get(tagKey).push(definition);
+        }
+        const nameKey = normalizeCatalogName(definition.name);
+        if (nameKey) {
+            if (!byName.has(nameKey)) byName.set(nameKey, []);
+            byName.get(nameKey).push(definition);
+        }
+    });
+    DATATYPE_DEFINITION_INDEX = { source, length: source.length, byTag, byName };
+    return DATATYPE_DEFINITION_INDEX;
+}
+
 function findDetailedElementDefinition(element) {
     if (!element) return null;
     const elementName = normalizeCatalogName(element.name);
@@ -5039,7 +5096,11 @@ function findDetailedElementDefinition(element) {
     // Match by identity (name/tag) across every detailed subsection that
     // declares a Datatype. An explicit reference page, or the source page when
     // that reference is omitted, is the strongest signal.
-    const candidates = MDR.blockDefinitions.filter(definition => definition.datatypeName);
+    const index = datatypeDefinitionIndex();
+    const candidateSet = new Set();
+    if (elementTag) (index.byTag.get(elementTag) || []).forEach(definition => candidateSet.add(definition));
+    if (elementName) (index.byName.get(elementName) || []).forEach(definition => candidateSet.add(definition));
+    const candidates = Array.from(candidateSet);
     const scoredAll = candidates.map(definition => {
         const definitionName = normalizeCatalogName(definition.name);
         const definitionBase = catalogBaseName(definition.name);
@@ -6396,6 +6457,7 @@ function resetPart2State() {
     MDR.messages = {};
     MDR.allElements = [];
     MDR.blockDefinitions = [];
+    BLOCK_DEFINITIONS_BY_ID.clear();
     MDR.definitionIndexes = null;
     MDR.codeSetsByName = {};
     MDR.dataTypesByName = {};
@@ -6760,6 +6822,23 @@ function navigateToMessage(msgId) {
     syncBusinessToMessage(msgId);
 }
 
+// A building block's numbered subsection can end up with two separate catalog
+// entries for the very same field: a generic complex placeholder (registered
+// while the row was parsed, before its "contains X on page N" sentence was
+// resolved) and the one that actually carries that resolved MessageComponent.
+// Both share the same section and XML tag, so only the resolved one is worth
+// showing; the placeholder is dropped.
+function preferResolvedBuildingBlock(list) {
+    const bySlot = new Map();
+    list.forEach(bb => {
+        const key = `${bb.section || ''}|${String(bb.tag || '').toLowerCase()}`;
+        const current = bySlot.get(key);
+        if (!current) { bySlot.set(key, bb); return; }
+        if (schemaComponentName(bb) && !schemaComponentName(current)) bySlot.set(key, bb);
+    });
+    return Array.from(bySlot.values());
+}
+
 // The message's own building blocks are the entries declared under
 // "<sectionRoot>.4 Message Building Blocks", i.e. the shallowest sections that
 // belong to this message. Nested structures reuse sections from shared types and
@@ -6769,7 +6848,7 @@ function messageRootBuildingBlocks(msg, entries) {
         String(bb.section).split('.')[0] === String(msg.sectionRoot));
     if (own.length) {
         const minDepth = Math.min(...own.map(bb => sectionDepth(bb.section)));
-        const roots = own.filter(bb => sectionDepth(bb.section) === minDepth);
+        const roots = preferResolvedBuildingBlock(own.filter(bb => sectionDepth(bb.section) === minDepth));
         if (roots.length) return roots.sort((left, right) => compareSectionNumbers(left.section, right.section));
     }
     // Fallback for messages whose building-block sections could not be parsed:
@@ -8790,19 +8869,33 @@ function schemaExpandAll(depthOverride) {
     if (!pane) return;
     const limit = Number(depthOverride === undefined ? SchemaViewer.maxDepth : depthOverride);
     SchemaViewer.truncated = false;
-    for (let pass = 0; pass < 60; pass++) {
-        const pending = Array.from(pane.querySelectorAll('.sch-node'))
-            .filter(element => !element.classList.contains('is-open')
-                && Number(element.dataset.depth) < limit
-                && schemaChildrenContainer(element));
+    // Re-scanning the WHOLE pane with querySelectorAll on every pass (up to 60
+    // times) meant a schema with thousands of nodes did dozens of full-tree DOM
+    // scans over an ever-growing tree, which is what froze the tab on a large
+    // message. Walking level by level and carrying each level's own just-
+    // materialised children forward as the next frontier visits every node
+    // exactly once, with no re-querying of branches already handled.
+    const root = pane.querySelector(':scope > .sch-tree > .sch-node[data-depth="0"]')
+        || pane.querySelector('.sch-node[data-depth="0"]');
+    const rootContainer = root ? schemaChildrenContainer(root) : null;
+    let frontier = rootContainer ? Array.from(rootContainer.children) : [];
+    while (frontier.length) {
+        const pending = frontier.filter(element => element.classList
+            && element.classList.contains('sch-node')
+            && Number(element.dataset.depth) < limit
+            && schemaChildrenContainer(element));
         if (!pending.length) break;
         if (SchemaViewer.nodes.size > SCHEMA_NODE_BUDGET) { SchemaViewer.truncated = true; break; }
+        const next = [];
         pending.forEach(element => {
+            const container = schemaChildrenContainer(element);
             const node = SchemaViewer.nodes.get(element.id);
             if (!node) return;
-            schemaMaterialize(node, element);
+            if (container.dataset.loaded !== 'true') schemaMaterialize(node, element);
             schemaSetNodeState(element, true);
+            next.push(...container.children);
         });
+        frontier = next;
     }
     schemaApplyFilter();
     schemaUpdateStatus();
