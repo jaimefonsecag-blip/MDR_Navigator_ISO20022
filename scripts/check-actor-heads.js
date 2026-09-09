@@ -72,6 +72,39 @@ console.log('\n--- otros dominios: sustantivos genericos de contraparte ---');
         step && step.to, expectedTo);
 });
 
+console.log('\n--- alias del mismo actor en distintas frases (Transferor / Old Plan Manager) ---');
+// Reported separately: "The transferor replies with a TransferCancellationStatus
+// Report..." kept showing "sin indicar" even though earlier steps of the same
+// flow clearly show who it replies to — because the document also calls that
+// same party "Old Plan Manager" elsewhere, the flow ends up naming more than
+// two distinct strings and the old "exactly two actors" rule gave up.
+const aliasFlow = section(
+    'The instructing party sends a PortfolioTransferInstruction message to the transferor.',
+    'The instructing party sends a PortfolioTransferCancellationRequest message to the transferor.',
+    'The transferor replies with a TransferCancellationStatusReport message with the appropriate status, for example, Accepted (PACK).',
+    'The old plan manager sends a PortfolioTransferRejection message.'
+);
+const aliasResult = api.part1BuildFlow(aliasFlow);
+expect('se reconstruyen los cuatro pasos', aliasResult ? aliasResult.steps.length : 0, 4);
+expect('paso 3: "transferor" sin destino se completa pidiendole prestado el otro extremo a un paso ya resuelto',
+    aliasResult && aliasResult.steps[2].to, 'Instructing Party');
+expect('paso 3: ese destino queda marcado como inferido', Boolean(aliasResult && aliasResult.steps[2].inferredTo), true);
+expect('paso 4: un tercer alias sin ninguna pareja resuelta que lo respalde no se inventa un destino',
+    aliasResult && aliasResult.steps[3].to, '');
+
+console.log('\n--- no adivina cuando dos pasos resueltos no estan de acuerdo ---');
+// If different fully-named steps disagree on who "transferor" talks to, that is
+// a genuine ambiguity in the document — guessing one of them would be worse
+// than leaving it unindicated.
+const conflictFlow = section(
+    'The instructing party sends a PortfolioTransferInstruction message to the transferor.',
+    'The custodian sends a PortfolioTransferInstruction message to the transferor.',
+    'The transferor replies with a TransferCancellationStatusReport message with the appropriate status, for example, Accepted (PACK).'
+);
+const conflictResult = api.part1BuildFlow(conflictFlow);
+expect('paso 3: sin un unico candidato consistente, sigue sin destino',
+    conflictResult && conflictResult.steps[2].to, '');
+
 console.log('\n--- no se vuelve mas permisivo de mas ---');
 // A bare "the user" (no qualifying word) stays too vague to name an actor, the
 // same way "the party" or "the agent" already did before this fix.
