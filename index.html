@@ -8293,6 +8293,10 @@ function schemaCreateNode(config) {
         // group is required, which is what SelectOneOf reports.
         required: multiplicity.min >= 1 && !isOr,
         depth: config.depth,
+        // Which node this one was created under, so a SelectOneOf group can be
+        // resolved to "my siblings with the same orGroup" when the API builder
+        // needs to enforce "exactly one of" on checkbox selection.
+        parentId: config.parentId || '',
         context: config.context || '',
         table: config.table || null,
         inTableChildren,
@@ -8363,6 +8367,7 @@ function schemaNodeChildren(node) {
         inTableChildren: (table && table.childrenByParent.get(child)) || [],
         depth: node.depth + 1,
         ancestors,
+        parentId: node.id,
         orGroup: groups.get(child) || 0
     }));
     return node.children;
@@ -8448,6 +8453,7 @@ function schemaBuildMessageRoot(msgId) {
         inTableChildren: index.childrenByParent.get(child) || [],
         depth: 1,
         ancestors: new Set(),
+        parentId: messageNode.id,
         orGroup: groups.get(child) || 0
     }));
     return schemaWrapDocument(messageNode);
@@ -8484,6 +8490,7 @@ function schemaBuildBlockRoot(msgId, block) {
         inTableChildren: index.childrenByParent.get(child) || [],
         depth: 1,
         ancestors: new Set([blockKey]),
+        parentId: blockNode.id,
         orGroup: groups.get(child) || 0
     }));
     return schemaWrapDocument(blockNode);
@@ -9409,9 +9416,43 @@ function apiToggleBuilder() {
     if (ApiBuilder.active) apiRenderPanel();
 }
 
+// Siblings sharing the same parent and the same orGroup number are one
+// SelectOneOf choice: exactly one of them can be sent, never several. orGroup
+// numbers are only unique among the children of a single parent (each call to
+// schemaOrGroups() restarts its own counter), so both parentId and orGroup
+// must match - matching orGroup alone could collide with an unrelated group
+// elsewhere in the tree.
+function apiOrGroupSiblings(node) {
+    if (!node || !node.isOr) return [];
+    const siblings = [];
+    SchemaViewer.nodes.forEach(candidate => {
+        if (candidate.id === node.id) return;
+        if (candidate.parentId !== node.parentId) return;
+        if (candidate.orGroup !== node.orGroup) return;
+        siblings.push(candidate);
+    });
+    return siblings;
+}
+
+function apiUncheckNode(nodeId) {
+    const element = document.getElementById(nodeId);
+    const box = element ? element.querySelector(':scope > .sch-row .sch-select-box input') : null;
+    if (box) box.checked = false;
+}
+
 function apiToggleSelect(nodeId, checked) {
     if (checked) {
         ApiBuilder.selected.set(nodeId, { path: apiNodeChain(nodeId), required: null });
+        // Reported: marking one field of a SelectOneOf group (e.g. AnyBIC / LEI)
+        // left the OpenAPI schema with both, when the MDR says only one is ever
+        // sent. Marking one now clears any other member of its same choice that
+        // was already marked.
+        const node = SchemaViewer.nodes.get(nodeId);
+        apiOrGroupSiblings(node).forEach(sibling => {
+            if (!ApiBuilder.selected.has(sibling.id)) return;
+            ApiBuilder.selected.delete(sibling.id);
+            apiUncheckNode(sibling.id);
+        });
     } else {
         ApiBuilder.selected.delete(nodeId);
     }
