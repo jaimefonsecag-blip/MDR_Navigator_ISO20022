@@ -9568,8 +9568,6 @@ function apiLeafSchema(node) {
             `CodeSet ${t.datatypeName || ''}: ${t.codes.length} valores (no se listan aquí; ver el set de códigos en el navegador).`);
     }
     if (node.definition) schema.description = apiAppendNote(schema.description, node.definition);
-    if (node.isOr) schema.description = apiAppendNote(schema.description,
-        `Grupo de elección ${node.orGroup} (SelectOneOf): se envía solo uno de los campos de este grupo.`);
     return schema;
 }
 
@@ -9601,11 +9599,9 @@ function apiOwnSchema(selNode, components) {
     });
     const body = { type: 'object' };
     if (node.definition) body.description = node.definition;
-    body.properties = properties;
-    if (required.length) body.required = required;
-    if (!Object.keys(properties).length) {
-        body.description = apiAppendNote(body.description,
-            'No se marcó ningún campo interno: se deja como objeto sin propiedades definidas.');
+    if (Object.keys(properties).length) {
+        body.properties = properties;
+        if (required.length) body.required = required;
     }
     return body;
 }
@@ -9757,7 +9753,7 @@ function apiYamlNode(value, indent) {
         return '\n' + keys.map(key => {
             const child = value[key];
             const head = `${pad}${apiYamlScalar(key)}:`;
-            if (child && typeof child === 'object' && Object.keys(child).length) return `${head}${apiYamlNode(child, indent + 1)}`;
+            if (child !== null && typeof child === 'object') return `${head}${apiYamlNode(child, indent + 1)}`;
             return `${head} ${apiYamlScalar(child)}\n`;
         }).join('');
     }
