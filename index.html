@@ -798,7 +798,12 @@ body.theme-light .sch-overlay { background:rgba(29,29,27,0.42); }
 .sch-node.is-open > .sch-children { display:block; }
 .sch-node.is-open > .sch-children:hover { border-left-color:var(--sch-guide-hot); }
 .sch-node > .sch-close { display:none; }
-.sch-node.is-open > .sch-close { display:flex; }
+.sch-node.is-open > .sch-close { display:flex; cursor:pointer; }
+.sch-node.is-open > .sch-close:hover { background:var(--sch-row-hover); }
+.sch-crumb-trail { display:inline-flex; align-items:center; gap:0.2rem; margin-left:0.6rem; }
+.sch-crumb-trail .crumb-seg { white-space:nowrap; color:var(--text-dim); font-size:0.7rem; opacity:0.85; }
+.sch-crumb-trail .crumb-seg.is-last { color:var(--accent); opacity:1; font-weight:600; }
+.sch-crumb-trail .crumb-sep { color:var(--text-dim); font-size:0.65rem; opacity:0.5; }
 .sch-toggle-icon { display:inline-flex; align-items:center; justify-content:center; width:1.05rem; height:1.05rem; color:var(--accent); font-size:0.72rem; transition:transform 0.14s; flex:0 0 auto; }
 .sch-node.is-open > .sch-open .sch-toggle-icon { transform:rotate(90deg); }
 .sch-brace { color:var(--sch-punct); font-weight:700; }
@@ -8830,7 +8835,7 @@ function schemaRenderNode(node) {
         return `<div class="sch-node is-open" ${attrs}>
             ${schemaOpenLineHtml(node, '{', node.children.length)}
             <div class="sch-children" data-loaded="true">${node.children.map(schemaRenderNode).join('')}</div>
-            <div class="sch-close"><span class="sch-brace">}</span></div>
+            <div class="sch-close" onclick="schemaShowAncestorCrumb(this)" title="Ver jerarquía de ancestros"><span class="sch-brace">}</span><span class="sch-crumb-trail hidden"></span></div>
         </div>`;
     }
 
@@ -8864,8 +8869,40 @@ function schemaRenderNode(node) {
         <div class="sch-row">${schemaApiCheckboxHtml(node)}${schemaKeyHtml(node)}${leadType}${isEnum ? schemaCodeSetTagHtml(node) : ''}${schemaBadgesHtml(node)}${recursiveBadge}</div>
         ${schemaOpenLineHtml(node, openBrace, count, isEnum)}
         <div class="sch-children" data-loaded="false"></div>
-        <div class="sch-close"><span class="sch-brace">${closeBrace}</span></div>
+        <div class="sch-close" onclick="schemaShowAncestorCrumb(this)" title="Ver jerarquía de ancestros"><span class="sch-brace">${closeBrace}</span><span class="sch-crumb-trail hidden"></span></div>
     </div>`;
+}
+
+// When the user clicks the closing brace of an open node, show the full
+// ancestor path (Document › GroupHeader › …) inline after the brace so they
+// can identify the nesting level without scrolling back up.
+function schemaShowAncestorCrumb(closeEl) {
+    const trail = closeEl.querySelector('.sch-crumb-trail');
+    if (!trail) return;
+    // Second click on the same line hides the trail
+    if (!trail.hidden) { trail.hidden = true; clearTimeout(trail._crumbTimer); return; }
+
+    // Walk up the DOM collecting .sch-node ancestors (outermost first)
+    const segs = [];
+    let el = closeEl.parentElement; // the .sch-node that owns this .sch-close
+    while (el) {
+        const nodeEl = (el.classList && el.classList.contains('sch-node'))
+            ? el : (el.closest ? el.closest('.sch-node') : null);
+        if (!nodeEl) break;
+        const nd = SchemaViewer.nodes.get(nodeEl.id);
+        if (nd) segs.unshift(nd.name || nd.tag || nodeEl.id);
+        el = nodeEl.parentElement;
+    }
+    if (!segs.length) return;
+
+    trail.innerHTML = segs.map((s, i) =>
+        (i > 0 ? '<span class="crumb-sep">›</span>' : '') +
+        `<span class="crumb-seg${i === segs.length - 1 ? ' is-last' : ''}">${escapeHtml(s)}</span>`
+    ).join('');
+    trail.hidden = false;
+
+    clearTimeout(trail._crumbTimer);
+    trail._crumbTimer = setTimeout(() => { trail.hidden = true; }, 5000);
 }
 
 // Each value carries the node and its position instead of its own definition: the
