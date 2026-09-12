@@ -8835,7 +8835,7 @@ function schemaRenderNode(node) {
         return `<div class="sch-node is-open" ${attrs}>
             ${schemaOpenLineHtml(node, '{', node.children.length)}
             <div class="sch-children" data-loaded="true">${node.children.map(schemaRenderNode).join('')}</div>
-            <div class="sch-close" onclick="schemaShowAncestorCrumb(this)" title="Ver jerarquía de ancestros"><span class="sch-brace">}</span><span class="sch-crumb-trail hidden"></span></div>
+            <div class="sch-close" onclick="schemaShowAncestorCrumb(this)" title="Ver jerarquía de datos"><span class="sch-brace">}</span><span class="sch-crumb-trail hidden"></span></div>
         </div>`;
     }
 
@@ -8869,18 +8869,24 @@ function schemaRenderNode(node) {
         <div class="sch-row">${schemaApiCheckboxHtml(node)}${schemaKeyHtml(node)}${leadType}${isEnum ? schemaCodeSetTagHtml(node) : ''}${schemaBadgesHtml(node)}${recursiveBadge}</div>
         ${schemaOpenLineHtml(node, openBrace, count, isEnum)}
         <div class="sch-children" data-loaded="false"></div>
-        <div class="sch-close" onclick="schemaShowAncestorCrumb(this)" title="Ver jerarquía de ancestros"><span class="sch-brace">${closeBrace}</span><span class="sch-crumb-trail hidden"></span></div>
+        <div class="sch-close" onclick="schemaShowAncestorCrumb(this)" title="Ver jerarquía de datos"><span class="sch-brace">${closeBrace}</span><span class="sch-crumb-trail hidden"></span></div>
     </div>`;
 }
 
 // When the user clicks the closing brace of an open node, show the full
 // ancestor path (Document › GroupHeader › …) inline after the brace so they
 // can identify the nesting level without scrolling back up.
+// NOTE: the file uses the `.hidden` CSS class (display:none!important), not
+// the HTML `hidden` attribute, so we use classList throughout.
 function schemaShowAncestorCrumb(closeEl) {
     const trail = closeEl.querySelector('.sch-crumb-trail');
     if (!trail) return;
     // Second click on the same line hides the trail
-    if (!trail.hidden) { trail.hidden = true; clearTimeout(trail._crumbTimer); return; }
+    if (!trail.classList.contains('hidden')) {
+        trail.classList.add('hidden');
+        clearTimeout(trail._crumbTimer);
+        return;
+    }
 
     // Walk up the DOM collecting .sch-node ancestors (outermost first)
     const segs = [];
@@ -8899,10 +8905,10 @@ function schemaShowAncestorCrumb(closeEl) {
         (i > 0 ? '<span class="crumb-sep">›</span>' : '') +
         `<span class="crumb-seg${i === segs.length - 1 ? ' is-last' : ''}">${escapeHtml(s)}</span>`
     ).join('');
-    trail.hidden = false;
+    trail.classList.remove('hidden');
 
     clearTimeout(trail._crumbTimer);
-    trail._crumbTimer = setTimeout(() => { trail.hidden = true; }, 5000);
+    trail._crumbTimer = setTimeout(() => { trail.classList.add('hidden'); }, 5000);
 }
 
 // Each value carries the node and its position instead of its own definition: the
