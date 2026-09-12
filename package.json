@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "node scripts/check-syntax.js && node scripts/check-handlers.js && node scripts/check-filenames.js && node scripts/check-translation.js && node scripts/check-reset.js && node scripts/check-workspace.js && node scripts/check-schema.js && node scripts/check-api-builder.js && node scripts/check-pdf-perf.js && node scripts/check-schema-expand.js && node scripts/check-bb-dedup.js && node scripts/check-actor-heads.js && node scripts/check-schema-lookahead.js && node scripts/check-identifierset.js && node scripts/check-schema-envelope.js && node scripts/check-api-orgroup.js && node scripts/check-api-yaml.js && node scripts/check-api-sample.js && node scripts/check-external-codes.js && node scripts/check-docx-parser.js"
+    "build:dist": "node scripts/build-dist.js",
+    "check": "node scripts/check-syntax.js && node scripts/check-handlers.js && node scripts/check-filenames.js && node scripts/check-translation.js && node scripts/check-reset.js && node scripts/check-workspace.js && node scripts/check-schema.js && node scripts/check-api-builder.js && node scripts/check-pdf-perf.js && node scripts/check-schema-expand.js && node scripts/check-bb-dedup.js && node scripts/check-actor-heads.js && node scripts/check-schema-lookahead.js && node scripts/check-identifierset.js && node scripts/check-schema-envelope.js && node scripts/check-api-orgroup.js && node scripts/check-api-yaml.js && node scripts/check-api-sample.js && node scripts/check-schema-crumb.js && node scripts/check-external-codes.js && node scripts/check-docx-parser.js"
   },
   "keywords": [
     "iso20022",
@@ -19,6 +20,7 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "@xmldom/xmldom": "0.9.12",
+    "javascript-obfuscator": "^5.7.0",
     "vite": "8.2.2",
     "vite-plugin-singlefile": "2.3.3"
   }

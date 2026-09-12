@@ -1,32 +1,9 @@
-# Dependencias: se reinstalan con `npm install`, nunca se versionan (34 MB).
+# Fuente legible — nunca subir al repo público
+/index.html
+
+# Dependencias
 node_modules/
 
-# Salida de build, si algún día se usa Vite.
-dist/
-
-# Documentos MDR de ISO 20022.
-# NO se suben: son publicaciones con derechos de ISO 20022 / SWIFT y no se
-# pueden redistribuir. Cada usuario carga su propio archivo en la herramienta.
-*.docx
-*.pdf
-
-# Libros de codigos externos que se usan solo en local (el descargado de ISO con
-# su nombre de trimestre, copias de trabajo...).
-*.xlsx
-# Excepcion deliberada: esta copia SI se publica junto a la pagina para que el
-# navegador la cargue sola y nadie tenga que arrastrar el archivo.
-# Es contenido de ISO 20022: revisar sus condiciones antes de hacer publico el repo.
-!external-codesets.xlsx
-
-# Basura de Windows / macOS / editores.
-desktop.ini
-Thumbs.db
+# Archivos de sistema
 .DS_Store
-*.swp
-.vscode/
-.idea/
-
-# Temporales de análisis.
-scripts/_*.mjs
-scripts/_*.js
-*.log
+Thumbs.db
