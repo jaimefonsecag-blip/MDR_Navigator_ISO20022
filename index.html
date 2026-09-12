@@ -8884,7 +8884,6 @@ function schemaShowAncestorCrumb(closeEl) {
     // Second click on the same line hides the trail
     if (!trail.classList.contains('hidden')) {
         trail.classList.add('hidden');
-        clearTimeout(trail._crumbTimer);
         return;
     }
 
@@ -8906,9 +8905,6 @@ function schemaShowAncestorCrumb(closeEl) {
         `<span class="crumb-seg${i === segs.length - 1 ? ' is-last' : ''}">${escapeHtml(s)}</span>`
     ).join('');
     trail.classList.remove('hidden');
-
-    clearTimeout(trail._crumbTimer);
-    trail._crumbTimer = setTimeout(() => { trail.classList.add('hidden'); }, 5000);
 }
 
 // Each value carries the node and its position instead of its own definition: the
