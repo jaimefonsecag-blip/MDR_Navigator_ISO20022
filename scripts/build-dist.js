@@ -7,7 +7,7 @@
 //      pero el código JS es prácticamente ilegible.
 //
 // Uso: node scripts/build-dist.js
-// El archivo de salida (dist/index.html) es el que se sube a GitHub Pages.
+// El archivo de salida (dist/index.html) es el que se sube a GitHub Pages / Cloudflare Pages.
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -76,5 +76,5 @@ writeFileSync(out, distHtml, 'utf8');
 
 const kb = (distHtml.length / 1024).toFixed(0);
 console.log(`\n✓ dist/index.html generado (${kb} KB)`);
-console.log('  → Este es el archivo que subes a GitHub Pages / compartes con usuarios.');
+console.log('  → Este es el archivo que subes a GitHub Pages / Cloudflare Pages.');
 console.log('  → El código fuente legible sigue en index.html (mantenlo en repo privado).');
